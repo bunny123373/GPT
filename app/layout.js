@@ -13,7 +13,15 @@ export const metadata = {
   title: "GPT — AI Chat & Images",
   description:
     "A private AI assistant for writing, answering questions, coding and creating images.",
-  icons: { icon: "/icon.svg" },
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon-180.png", sizes: "180x180" }],
+  },
 };
 
 export const viewport = {
