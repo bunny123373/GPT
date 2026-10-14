@@ -220,6 +220,51 @@ console.log('\nelevation ladder');
    These assert the ratios directly, so the ramp is held to a standard rather
    than to taste. */
 
+/* ── the composer has to be findable ─────────────────────────
+   A white input on a cream page is low-contrast by construction, so the
+   composer relies on its border to read as a box at all. If that border
+   quietly goes soft again the whole chat box looks like a hole in the page. */
+
+console.log('\ncomposer outline');
+{
+  const contrast = (fg, bg) => {
+    const [a, b] = [luminance(fg), luminance(bg)].sort((x, y) => y - x);
+    return (a + 0.05) / (b + 0.05);
+  };
+
+  for (const [name, vars] of [['night', nightVars], ['light', lightVars]]) {
+    // Border against the field it encloses, and against the canvas behind it.
+    const vsField = contrast(vars.get('--c-field-border'), vars.get('--c-field'));
+    const vsCanvas = contrast(vars.get('--c-field-border'), vars.get('--c-base'));
+    ok(`the ${name} composer border is visible against its own field`,
+      vsField >= 1.4, `${vsField.toFixed(2)}:1`);
+    ok(`the ${name} composer border is visible against the page`,
+      vsCanvas >= 1.4, `${vsCanvas.toFixed(2)}:1`);
+  }
+
+  // The light border is the one under real pressure, and it must be clearly
+  // stronger than the soft hairline used by other controls.
+  const lightBorder = contrast(lightVars.get('--c-field-border'), lightVars.get('--c-base'));
+  const lightHairline = contrast(lightVars.get('--c-line'), lightVars.get('--c-base'));
+  ok('the light composer border is noticeably stronger than the hairline',
+    lightBorder > lightHairline * 2,
+    `border ${lightBorder.toFixed(2)} vs hairline ${lightHairline.toFixed(2)}`);
+
+  // Both are dark, so the risk is the border being so close to the text colour
+  // that the box reads as filled-in. It should sit apart from body text while
+  // staying a border rather than a slab.
+  const borderL = luminance(lightVars.get('--c-field-border'));
+  const textL = luminance(lightVars.get('--c-fg'));
+  ok('the light composer border stays a hairline, not a filled slab',
+    borderL > textL * 0.6, `border ${borderL.toFixed(4)} vs text ${textL.toFixed(4)}`);
+  // "Clearly dark" is expressed relative to the soft hairline it replaces,
+  // not as an absolute number that would just be tuned to fit today's value.
+  const hairlineL = luminance(lightVars.get('--c-line'));
+  ok('the light composer border is far darker than the soft hairline',
+    borderL < hairlineL * 0.25,
+    `border ${borderL.toFixed(4)} vs hairline ${hairlineL.toFixed(4)}`);
+}
+
 console.log('\ntext contrast');
 {
   const contrast = (fg, bg) => {

@@ -9,9 +9,9 @@ import Gallery from "../components/Gallery";
 import ThemePicker from "../components/ThemePicker";
 import ModelMenu, { ModelTrigger } from "../components/ModelMenu";
 import AccountMenu, { buildAccountStats } from "../components/AccountMenu";
-import { SettingsDialog, ProfileDialog } from "../components/Dialogs";
+import { SettingsDialog, ProfileDialog, MemoriesDialog } from "../components/Dialogs";
 import {
-  IconMenu, IconDownload, IconPencil, IconImage, IconCap,
+  IconMenu, IconPencil, IconImage, IconCap,
   IconCode, IconBulb, IconChecks, IconHouse, IconFrame,
   IconLayers, IconCube, IconStar,
 } from "../components/icons";
@@ -27,9 +27,11 @@ import {
   listAll, save, saveSync, remove, clearAll,
   loadSettings, saveSettings, clearSettings,
   loadProfile, saveProfile, clearProfile,
+  loadMemories, saveMemories, clearMemories,
   newConversation, newMessage, deriveTitle, dateGroup,
 } from "../lib/conversations";
 import { BLANK_PROFILE, hasProfile, effectiveSystemPrompt } from "../lib/profile";
+import { EXTRACT_INSTRUCTION, merge as mergeMemories, parseSuggestions, remove as removeMemory, withMemories } from "../lib/memories";
 import { store } from "../lib/store";
 
 const chatModels = new ModelCatalogue();
@@ -71,6 +73,10 @@ export default function Page() {
   const [currentId, setCurrentId] = useState(null);
   const [settings, setSettings] = useState(null);
   const [profile, setProfile] = useState({ ...BLANK_PROFILE });
+  const [memories, setMemories] = useState([]);
+  /* True while the "suggest memories" call is in flight, so the button can
+     disable itself rather than letting a user fire several at once. */
+  const [extracting, setExtracting] = useState(false);
   const [mode, setMode] = useState("chat");
   const [streaming, setStreaming] = useState(false);
   const [input, setInput] = useState("");
@@ -91,6 +97,7 @@ export default function Page() {
   const [accountStats, setAccountStats] = useState([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [memoriesOpen, setMemoriesOpen] = useState(false);
 
   const abortRef = useRef(null);
   const scrollerRef = useRef(null);
@@ -103,7 +110,10 @@ export default function Page() {
   const messages = conv?.messages || [];
   const hasMessages = messages.length > 0;
 
-  const sysPrompt = () => effectiveSystemPrompt(settings?.systemPrompt, profile);
+  /* Base prompt → profile → memories. Order matters: memories are the most
+     specific context, so they sit closest to the conversation. */
+  const sysPrompt = () =>
+    withMemories(effectiveSystemPrompt(settings?.systemPrompt, profile), memories);
 
   /* ── toast ─────────────────────────────────────────────── */
   const toast = useCallback((message, kind = "") => {
@@ -145,8 +155,10 @@ export default function Page() {
       await store.init();
       const s = await loadSettings();
       const p = await loadProfile();
+      const mem = await loadMemories();
       setSettings(s);
       setProfile(p);
+      setMemories(mem);
       setSidebarOpen(window.matchMedia("(max-width: 767px)").matches ? false : !s.sidebarCollapsed);
 
       try { await chatModels.load(); } catch (err) { toast(describeError(err), "err"); }
@@ -508,35 +520,7 @@ export default function Page() {
     });
   }, []);
 
-  const exportChat = useCallback((format) => {
-    if (!conv?.messages.length) { toast("Nothing to export yet.", "err"); return; }
-    const stamp = new Date(conv.createdAt || Date.now()).toISOString().slice(0, 10);
-    const base = `${slug(conv.title)}-${stamp}`;
-    if (format === "json") {
-      downloadBlob(`${base}.json`, JSON.stringify(conv, null, 2), "application/json");
-    } else {
-      const lines = [`# ${asText(conv.title, "Chat")}`, "", `_Exported ${new Date().toLocaleString()}_`, ""];
-      for (const m of conv.messages) {
-        if (m.deleted) continue;
-        lines.push(m.role === "user" ? "## You" : `## ${asText(m.model, "GPT")}`);
-        if (m.attachments?.length) {
-          lines.push("", ...m.attachments.map((a) => `- 📎 ${asText(a.name, "attachment")}${a.path ? ` (${a.path})` : ""}`));
-        }
-        if (m.kind === "image") {
-          const src = asText(m.images?.[0]?.image_url?.url, "");
-          lines.push("", `**Prompt:** ${asText(m.prompt, "")}`);
-          if (src) lines.push("", `![Generated image](${src})`);
-          if (m.savedPath) lines.push("", `_Saved to ${m.savedPath}_`);
-          if (m.error) lines.push("", `_Error: ${asText(m.error, "")}_`);
-          lines.push("");
-          continue;
-        }
-        lines.push("", m.text || "", "");
-      }
-      downloadBlob(`${base}.md`, lines.join("\n"));
-    }
-    toast(`Exported as ${format.toUpperCase()}`, "ok");
-  }, [conv, toast]);
+  
 
   /* ── auth ──────────────────────────────────────────────── */
   const loadAccountStats = useCallback(async () => {
@@ -589,6 +573,69 @@ export default function Page() {
     clearProfile();
     toast("Profile cleared", "ok");
   }, [toast]);
+
+  /* ── memories ──────────────────────────────────────────── */
+  const commitMemories = useCallback(async (next, message) => {
+    setMemories(next);
+    await saveMemories(next);
+    if (message) toast(message, "ok");
+  }, [toast]);
+
+  const addMemory = useCallback(async (text) => {
+    const trimmed = asText(text, "").trim();
+    if (!trimmed) return;
+    await commitMemories(mergeMemories(memories, [trimmed]));
+  }, [memories, commitMemories]);
+
+  const deleteMemory = useCallback(async (text) => {
+    await commitMemories(removeMemory(memories, text));
+  }, [memories, commitMemories]);
+
+  const clearAllMemories = useCallback(async () => {
+    setMemories([]);
+    await clearMemories();
+    toast("Memories cleared", "ok");
+  }, [toast]);
+
+  /**
+   * Ask the current model what it learned from this conversation.
+   *
+   * Deliberately on demand rather than automatic. Extraction costs a model
+   * call and can return a confident wrong fact, so it only runs when asked and
+   * the result goes through the same dedupe as a typed memory. Only user turns
+   * are sent: the assistant quoting something back is not evidence the user
+   * said it, and feeding it both directions lets a hallucination about itself
+   * become permanent.
+   */
+  const suggestMemories = useCallback(async () => {
+    const source = conversations.find((c) => c.id === currentId);
+    const history = (source?.messages || []).filter(
+      (m) => m.role === "user" && !m.deleted && (m.text || "").trim(),
+    );
+    if (!history.length) { toast("Nothing to learn from this chat yet.", "err"); return; }
+    if (extracting) return;
+
+    setExtracting(true);
+    try {
+      const result = await runTurn({
+        messages: [
+          { role: "system", content: EXTRACT_INSTRUCTION },
+          ...history.slice(-20).map((m) => ({ role: "user", content: m.text })),
+        ],
+        model: settings.model,
+        stream: false,
+        temperature: 0.2,
+        maxTokens: 600,
+      });
+      const found = parseSuggestions(result.text);
+      if (!found.length) { toast("No durable facts found in this chat.", ""); return; }
+      await commitMemories(mergeMemories(memories, found), `Remembered ${found.length} new fact${found.length > 1 ? "s" : ""}`);
+    } catch (err) {
+      toast(describeError(err), "err");
+    } finally {
+      setExtracting(false);
+    }
+  }, [conversations, currentId, settings, memories, extracting, commitMemories, toast]);
 
   /* ── models menu ───────────────────────────────────────── */
   const catalogue = mode === "image" ? imageModels : chatModels;
@@ -671,8 +718,6 @@ export default function Page() {
       tiers={qualityTiersFor(settings.imageModel)}
       quality={settings.imageQuality}
       onQuality={(v) => onSettingChange({ imageQuality: v })}
-      test={!!settings.imageTest}
-      onTest={(v) => onSettingChange({ imageTest: v })}
       hasMessages={hasMessages}
     />
   );
@@ -694,6 +739,7 @@ export default function Page() {
           image: async () => { await createConversation(); setMode("image"); },
           gallery: () => setView("gallery"),
           ask: () => { setAccountOpen(false); setDraft({ ...profile }); setProfileOpen(true); },
+          memories: () => { setAccountOpen(false); setMemoriesOpen(true); },
         }}
         view={view}
         search={search}
@@ -703,6 +749,7 @@ export default function Page() {
         onSelect={selectConversation}
         onDelete={deleteConversation}
         profileOn={hasProfile(profile)}
+        memoryCount={memories.length}
         account={
           <AccountMenu
             user={{
@@ -767,14 +814,6 @@ export default function Page() {
               <div className="flex-1" />
               <div className="font-mono text-[11.5px] text-neutral-500 max-sm:hidden">{stats}</div>
               <ThemePicker compact />
-              <button
-                onClick={(e) => exportChat(e.shiftKey ? "json" : "md")}
-                title="Export as Markdown (Shift+click for JSON)"
-                aria-label="Export"
-                className="grid size-9 place-items-center rounded-md text-neutral-400 hover:bg-ink-700 hover:text-neutral-100 min-[420px]:size-8"
-              >
-                <IconDownload className="size-4" />
-              </button>
             </>
           )}
         </header>
@@ -879,6 +918,19 @@ export default function Page() {
         basePrompt={settings.systemPrompt}
       />
 
+      <MemoriesDialog
+        open={memoriesOpen}
+        onClose={() => setMemoriesOpen(false)}
+        memories={memories}
+        onAdd={addMemory}
+        onDelete={deleteMemory}
+        onClear={clearAllMemories}
+        onSuggest={suggestMemories}
+        canSuggest={messages.some((m) => m.role === "user" && !m.deleted && (m.text || "").trim())}
+        extracting={extracting}
+        basePrompt={settings.systemPrompt}
+      />
+
       <div className="pointer-events-none fixed bottom-5 left-1/2 z-100 flex -translate-x-1/2 flex-col gap-2">
         {toasts.map((t) => (
           <div
@@ -897,18 +949,6 @@ export default function Page() {
 }
 
 /* ── helpers ─────────────────────────────────────────────── */
-
-function downloadBlob(filename, text, type) {
-  const blob = new Blob([text], { type });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 function describeUsage(usage, usageDetails) {
   if (!usage && !usageDetails) return "";

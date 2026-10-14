@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
+
 import { TONES, profilePrompt } from "../lib/profile";
+import { memoryPrompt } from "../lib/memories";
 import ThemePicker from "./ThemePicker";
+import { IconX } from "./icons";
 
 /** Shared modal shell. `dialog` semantics without the native element, so the
  *  content can be laid out however it likes. */
@@ -189,6 +193,118 @@ export function ProfileDialog({
           {block
             ? [basePrompt, block].filter(Boolean).join("\n\n")
             : "Nothing yet — answer a question above to see what gets sent."}
+        </pre>
+      </details>
+    </Modal>
+  );
+}
+
+/* ── Memories ────────────────────────────────────────────────
+   Free-form durable facts, applied to every chat. The user writes them by
+   hand, or presses "Suggest from this chat" and has the model propose some
+   that can then be reviewed one at a time. Nothing is ever written to
+   storage without the user seeing it. */
+
+export function MemoriesDialog({
+  open, onClose, memories, onAdd, onDelete, onClear, onSuggest,
+  canSuggest, extracting, basePrompt,
+}) {
+  const [draft, setDraft] = useState("");
+
+  const submit = () => {
+    const text = draft.trim();
+    if (!text) return;
+    onAdd(text);
+    setDraft("");
+  };
+
+  return (
+    <Modal
+      open={open} onClose={onClose} title="Memories"
+      footer={
+        <div className="flex items-center gap-2">
+          <button onClick={onClear}
+            className="rounded-lg px-2.5 py-1.5 text-sm text-neutral-400 hover:bg-ink-700 hover:text-neutral-100">
+            Clear all
+          </button>
+          <div className="flex-1" />
+          <button onClick={onClose}
+            className="rounded-lg bg-invert px-3.5 py-1.5 text-sm font-medium text-invert-fg hover:bg-invert-hover">
+            Done
+          </button>
+        </div>
+      }
+    >
+      <p className="mt-0 mb-4 text-xs text-neutral-400">
+        Things worth knowing about you in every chat — your tools, your role, how you like
+        answers written. They are added to the system prompt of each message you send.
+      </p>
+
+      <div className="mb-5">
+        <label htmlFor="mem-new" className={label}>Add a memory</label>
+        <div className="flex gap-2">
+          <input
+            id="mem-new" type="text" value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }}
+            placeholder="e.g. Prefers TypeScript over JavaScript"
+            autoComplete="off" className={field}
+          />
+          <button
+            onClick={submit} disabled={!draft.trim()}
+            className="shrink-0 rounded-lg bg-invert px-3.5 text-sm font-medium text-invert-fg
+                       hover:bg-invert-hover disabled:opacity-40"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-5">
+        <div className="mb-2 flex items-center gap-2">
+          <span className={label}>Remembered</span>
+          <button
+            onClick={onSuggest} disabled={!canSuggest || extracting}
+            title={canSuggest ? "Have the model read this chat and suggest facts worth keeping"
+                              : "Nothing in this chat to learn from yet"}
+            className="ml-auto flex items-center gap-1.5 rounded-lg border border-ink-700 px-2.5 py-1
+                       text-xs text-neutral-300 hover:bg-ink-700 disabled:opacity-40"
+          >
+            {extracting ? "Reading…" : "Suggest from this chat"}
+          </button>
+        </div>
+
+        {memories.length === 0 ? (
+          <p className="rounded-lg border border-ink-700 bg-ink-800 px-3.5 py-3 text-sm text-neutral-400">
+            Nothing remembered yet. Add one above, or let the model suggest some from a chat
+            you have already had.
+          </p>
+        ) : (
+          <ul className="thin-scroll max-h-[280px] overflow-y-auto rounded-lg border border-ink-700">
+            {memories.map((m) => (
+              <li key={m}
+                className="flex items-start gap-2 border-b border-ink-700 px-3.5 py-2.5 last:border-b-0">
+                <span className="min-w-0 flex-1 text-sm">{m}</span>
+                <button
+                  onClick={() => onDelete(m)}
+                  title="Forget this" aria-label={`Forget: ${m}`}
+                  className="shrink-0 rounded-md p-1 text-neutral-400 hover:bg-ink-700 hover:text-danger"
+                >
+                  <IconX className="size-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <details className="rounded-lg border border-ink-700 px-3.5 py-2">
+        <summary className="cursor-pointer list-none py-1.5 text-[13px] text-neutral-400">
+          What gets sent with each message
+        </summary>
+        <pre className="mt-1.5 max-h-[220px] overflow-y-auto rounded-[10px] border border-ink-700 bg-code p-3.5 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words text-neutral-400">
+          {[basePrompt, memoryPrompt(memories)].filter(Boolean).join("\n\n")
+            || "Nothing yet — add a memory above to see what gets sent."}
         </pre>
       </details>
     </Modal>

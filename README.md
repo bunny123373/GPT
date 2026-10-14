@@ -126,7 +126,7 @@ Long words wrap at the word boundary rather than being chopped mid-character
 | **500+ chat models** | Live catalogue via `puter.ai.listModels()`, grouped by provider, searchable, with real per-1M-token prices |
 | **Image generation** | GPT Image, Gemini, Grok, FLUX, Seedream and more, with aspect ratio and per-model quality tiers |
 | **Image-to-image** | Attach or paste a reference image and ask for a variation |
-| **Test mode** | Generate a sample image without spending credits |
+| **Memories** | Durable facts about you — your tools, your role, how you like answers — applied to *every* chat. Add them by hand, or have the model propose some from a conversation you have already had |
 | **Streaming** | Token-by-token rendering with a Stop button, cancellable mid-response via `AbortSignal` |
 | **Your chats, your cloud** | Persisted in Puter's key-value store — signed in, they follow you across devices |
 | **Guest mode** | Not signed in? Everything still works, stored locally in `localStorage` |
@@ -137,10 +137,43 @@ Long words wrap at the word boundary rather than being chopped mid-character
 | **Regenerate / copy / delete** | Per-message actions |
 | **Anchored model picker** | Dropdown under the header button, searchable, grouped by provider, with live pricing — no full-screen takeover |
 | **Account & usage menu** | ChatGPT-style avatar dropdown showing your real Puter storage, this month's calls and spend, plus Settings and sign-out |
-| **Export** | Markdown (or Shift+click for JSON) |
 | **Light & dark themes** | Night by default, with a light mode and a system-following option |
 | **Gallery** | Browse generated images and uploads in a filterable grid |
 | **Dark, responsive** | Works down to mobile widths |
+
+## Memories
+
+The profile (Settings → *Ask me*) is a fixed questionnaire: name, role, tone, goals, what to avoid.
+Memories are the looser cousin — free-form lines that follow you into **every** chat, so you don't
+repeat yourself to a new conversation. Open them from the sidebar; there's also a live count on the
+nav item.
+
+Two ways to fill them:
+
+- **By hand.** Type a fact ("Prefers TypeScript over JavaScript"), Add, done.
+- **From a conversation.** *Suggest from this chat* sends the conversation to the current model and
+  adds whatever it thinks is worth keeping.
+
+Everything is visible, individually deletable, and nothing is written without you seeing it.
+
+Some deliberate choices, because this is the part of the app that stores something you didn't
+explicitly type:
+
+- **Extraction is on demand, never automatic.** It costs a model call and a wrong-but-confident fact
+  is the failure mode. It runs when you press the button, and the result goes through the same
+  review-and-dedupe path as a typed memory.
+- **Only your turns are read.** The assistant quoting something back is not evidence you said it;
+  reading both directions would let a hallucinated fact about the *assistant* become permanent.
+- **Facts, not instructions.** A memory renders as `- The user's timezone is Europe/London`, never
+  as "always use X". Instructions in a system prompt get obeyed rather than recalled, and a memory
+  is one paraphrase away from turning into a command.
+- **Capped and deduplicated.** 60 entries, 240 characters each, case-insensitively deduplicated —
+  an unbounded list would grow the system prompt on every request forever.
+
+`lib/memories.js` holds the logic and `test/memories.js` covers it. The parser is the interesting
+part: it accepts a fenced array, a chatty preamble, or a bare array, but **rejects**
+`{"facts": [...]}` — slicing from the inner `[` to the outer `]` parses as valid JSON and would
+silently accept an object as if it were the list, storing nothing while reporting success.
 
 ## Run it
 
@@ -164,7 +197,7 @@ Then open the URL, sign in with Puter (optional), and start chatting.
 ## Modes
 
 An **Image** toggle sits inside the message box (it lights up in the accent colour and shows an ✕ when active, plus
-shape / quality / test controls above the input). **Create image** in the sidebar starts a fresh
+shape and quality controls above the input). **Create image** in the sidebar starts a fresh
 chat already in that mode.
 
 Generated images land in the conversation as a square card that breathes while it renders, then
@@ -187,12 +220,13 @@ fades in — with download, copy-prompt, regenerate and *Save to Puter drive*.
 npm test           # everything below, plus the static-asset guard
 npm run test:unit  # markdown, chat engine, image generation, profile, storage
 npm run test:theme # the theme store and the pre-paint boot script
+npm run test:memories
 npm run test:gallery
 npm run test:css   # rebuilds, then checks every class token compiles
 npm run test:sdk   # fetches the live Puter.js bundle and checks the API surface
 ```
 
-**569 assertions across nine suites.** The unit suites run against a fake `puter` global, so they
+**681 assertions across ten suites.** The unit suites run against a fake `puter` global, so they
 cover streaming, aborts, error chunks, reasoning, images, image option building, quality-tier
 whitelisting, usage capture, the 400 KB KV ceiling, Markdown XSS escaping and theme resolution
 without needing a browser or an account. The theme suite goes a step further and *executes* the
@@ -221,6 +255,7 @@ lib/imagegen.js       image generation: puter.ai.txt2img, model catalogue, optio
 lib/store.js          persistence adapter: puter.kv, falling back to localStorage
 lib/conversations.js  conversation model, titles, size limits
 lib/gallery.js        gallery data layer: classify, sort, filter, scan the drive
+lib/memories.js       durable per-user facts: prompt rendering, merging, extraction parsing
 lib/theme.js          theme store + the boot script
 lib/markdown.js       dependency-free Markdown renderer
 ```

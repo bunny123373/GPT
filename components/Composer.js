@@ -7,7 +7,7 @@ import { IconImage, IconX, IconPaperclip, IconArrowUp, IconStop } from "./icons"
 export default function Composer({
   value, onChange, mode, onToggleMode, onSend, onStop, streaming,
   attachments, onAddFiles, onRemoveAttachment,
-  ratio, onRatio, tiers, quality, onQuality, test, onTest,
+  ratio, onRatio, tiers, quality, onQuality,
   hasMessages,
 }) {
   const ref = useRef(null);
@@ -52,7 +52,7 @@ export default function Composer({
         </div>
       )}
 
-      <div className="rounded-[28px] border border-ink-700 bg-ink-750 px-3 pt-3 pb-2">
+      <div className="rounded-[28px] border border-field-border bg-ink-750 px-3 pt-3 pb-2">
         {image && (
           <div className="mb-2 flex flex-wrap items-center gap-2 border-b border-ink-700 pb-2.5 px-2">
             <label className="flex items-center gap-1.5 text-xs text-neutral-500">
@@ -85,16 +85,7 @@ export default function Composer({
               </label>
             )}
 
-            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-neutral-500">
-              <input
-                type="checkbox"
-                checked={test}
-                onChange={(e) => onTest(e.target.checked)}
-                className="size-3.5 accent-accent"
-              />
-              Test
-            </label>
-          </div>
+            </div>
         )}
 
         <textarea

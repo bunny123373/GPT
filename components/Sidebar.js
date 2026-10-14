@@ -3,7 +3,7 @@
 import { dateGroup } from "../lib/conversations";
 import {
   IconPanelClose, IconPencil, IconImage, IconSparkle,
-  IconSearch, IconTrash, IconGrid,
+  IconSearch, IconTrash, IconGrid, IconBrain,
 } from "./icons";
 
 const NAV = [
@@ -11,11 +11,17 @@ const NAV = [
   { id: "image", label: "Create image", Icon: IconImage },
   { id: "gallery", label: "Gallery", Icon: IconGrid },
   { id: "ask", label: "Ask me", Icon: IconSparkle },
+  { id: "memories", label: "Memories", Icon: IconBrain },
 ];
+
+/* Nav entries that open a dialog rather than changing the view. They must not
+   take the active highlight, or closing the dialog would leave a destination
+   highlighted that nothing is actually showing. */
+const DIALOG_ENTRIES = new Set(["ask", "memories"]);
 
 export default function Sidebar({
   open, onCollapse, nav, view, search, onSearch, conversations, currentId,
-  onSelect, onDelete, account, profileOn,
+  onSelect, onDelete, account, profileOn, memoryCount = 0,
 }) {
   const q = search.trim().toLowerCase();
   const visible = conversations.filter((c) => {
@@ -66,9 +72,10 @@ export default function Sidebar({
           <button
             key={id}
             onClick={() => nav[id]()}
-            /* `ask` opens a dialog over whatever view is showing, so it never
-               reads as the active view. The rest are destinations. */
-            aria-current={id !== "ask" && view === id ? "page" : undefined}
+            /* `ask` and `memories` open a dialog over whatever view is showing,
+               so they never read as the active view. The rest are
+               destinations. */
+            aria-current={!DIALOG_ENTRIES.has(id) && view === id ? "page" : undefined}
             className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm ${
               view === id ? "bg-ink-800 text-neutral-100" : "hover:bg-ink-800"
             }`}
@@ -78,6 +85,11 @@ export default function Sidebar({
             {id === "ask" && profileOn && (
               <span className="ml-auto rounded-full bg-accent-soft px-2 py-px text-[11px] text-accent">
                 on
+              </span>
+            )}
+            {id === "memories" && memoryCount > 0 && (
+              <span className="ml-auto rounded-full bg-accent-soft px-2 py-px font-mono text-[11px] text-accent">
+                {memoryCount}
               </span>
             )}
           </button>

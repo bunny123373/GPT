@@ -149,6 +149,15 @@ export const IconGrid = (p) => (
   </Icon>
 );
 
+/* Head silhouette with a thought-bubble notch, for the memory list. */
+export const IconBrain = (p) => (
+  <Icon {...p}>
+    <path d="M12 4.5a3 3 0 0 0-5.7-1.3A2.6 2.6 0 0 0 4 5.6v.6a2.6 2.6 0 0 0-.4 4.8V13a2.7 2.7 0 0 0 2 2.6V18h4" />
+    <path d="M12 4.5a3 3 0 0 1 5.7-1.3A2.6 2.6 0 0 1 20 5.6v.6a2.6 2.6 0 0 1 .4 4.8V13a2.7 2.7 0 0 1-2 2.6V18h-2" />
+    <path d="M9.6 18a2.4 2.4 0 0 0 4.8 0v-1.3a2 2 0 0 0-.5-1.3l-.6-.5" />
+  </Icon>
+);
+
 export const IconSun = (p) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="4" />

@@ -75,6 +75,13 @@
   --color-success: var(--c-success);
   --color-success-soft: var(--c-success-soft);
 
+  /* The composer's outline. Split out from --color-line-strong rather than
+     reusing it: the chat box is the app's focal point and needs a real dark
+     edge on cream, while the selects and dialog fields want a soft one.
+     Left on the soft token, a white box on a cream page had almost no
+     definition and read as a hole rather than an input. */
+  --color-field-border: var(--c-field-border);
+
   /* A deliberately inverted pair, for controls that must stay legible
      in either theme (the send button, Save). At night it is a light
      circle on black; in daylight a dark circle on cream. */
@@ -101,6 +108,9 @@
   --c-field: #2b2b29;       /* form fields */
   --c-line: #3e3e3a;        /* borders */
   --c-line-strong: #52514c;
+  /* Night already separates the composer from the page by lightness, so this
+     stays a subtle edge. The light value is the one doing real work. */
+  --c-field-border: #4a4945;
 
   --c-fg-strong: #f5f4ef;
   --c-fg: #e8e7e0;
@@ -154,6 +164,8 @@
   --c-field: #ffffff;
   --c-line: #e5e3dc;
   --c-line-strong: #cfccc1;
+  /* Near-black, on purpose — see --color-field-border. */
+  --c-field-border: #2a2a26;
 
   --c-fg-strong: #141413;
   --c-fg: #2f2f2c;
