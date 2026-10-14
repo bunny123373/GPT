@@ -15,16 +15,29 @@ const base = {
   strokeLinejoin: "round",
 };
 
-const Icon = ({ children, className = "size-4 shrink-0", ...rest }) => (
-  <svg {...base} className={className} aria-hidden="true" {...rest}>{children}</svg>
+/**
+ * `className` is always ADDITIVE. It used to replace the icon's own size
+ * class, so `<IconSearch className="absolute ...">` shipped an SVG with no
+ * dimensions at all and the browser fell back to its 300x150 replaced-element
+ * default — a giant, misplaced glyph. Pass `size` to change the dimensions.
+ */
+const Icon = ({ children, size = "size-4", className = "", ...rest }) => (
+  <svg
+    {...base}
+    className={`${size} shrink-0 ${className}`.trim()}
+    aria-hidden="true"
+    {...rest}
+  >
+    {children}
+  </svg>
 );
 
 export const IconMenu = (p) => (
-  <Icon className="size-5" {...p}><path d="M3 6h18M3 12h18M3 18h18" /></Icon>
+  <Icon size="size-5" {...p}><path d="M3 6h18M3 12h18M3 18h18" /></Icon>
 );
 
 export const IconPanelClose = (p) => (
-  <Icon className="size-5" {...p}><path d="M3 6h18M3 12h11M3 18h18" /></Icon>
+  <Icon size="size-5" {...p}><path d="M3 6h18M3 12h11M3 18h18" /></Icon>
 );
 
 export const IconPencil = (p) => (
@@ -43,11 +56,11 @@ export const IconSparkle = (p) => (
 );
 
 export const IconChevron = (p) => (
-  <Icon className="size-4 shrink-0" {...p}><path d="m6 9 6 6 6-6" /></Icon>
+  <Icon size="size-4" {...p}><path d="m6 9 6 6 6-6" /></Icon>
 );
 
 export const IconSearch = (p) => (
-  <Icon className="size-3.5" {...p}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></Icon>
+  <Icon size="size-3.5" {...p}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></Icon>
 );
 
 export const IconCopy = (p) => (
@@ -67,7 +80,7 @@ export const IconDownload = (p) => (
 );
 
 export const IconArrowUp = (p) => (
-  <Icon className="size-5" strokeWidth={2} {...p}><path d="M12 19V5M5 12l7-7 7 7" /></Icon>
+  <Icon size="size-5" strokeWidth={2} {...p}><path d="M12 19V5M5 12l7-7 7 7" /></Icon>
 );
 
 export const IconStop = (p) => (
@@ -77,11 +90,11 @@ export const IconStop = (p) => (
 );
 
 export const IconPaperclip = (p) => (
-  <Icon className="size-[18px]" {...p}><path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 1 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" /></Icon>
+  <Icon size="size-[18px]" {...p}><path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 1 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" /></Icon>
 );
 
 export const IconSettings = (p) => (
-  <Icon className="size-4" {...p}>
+  <Icon size="size-4" {...p}>
     <circle cx="12" cy="12" r="3" />
     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
   </Icon>
@@ -96,7 +109,7 @@ export const IconLogout = (p) => (
 );
 
 export const IconX = (p) => (
-  <Icon className="size-3.5" {...p}><path d="M18 6 6 18M6 6l12 12" /></Icon>
+  <Icon size="size-3.5" {...p}><path d="M18 6 6 18M6 6l12 12" /></Icon>
 );
 
 /* Starter-pill glyphs */

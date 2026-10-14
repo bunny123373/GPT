@@ -11,6 +11,7 @@
     "test:unit": "npm run test",
     "test:image": "node test/imagegen.js",
     "test:profile": "node test/profile.js",
+    "test:css": "next build && node test/tailwind-audit.mjs",
     "test:sdk": "node test/sdk-surface.js"
   },
   "dependencies": {

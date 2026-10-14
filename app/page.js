@@ -633,6 +633,10 @@ export default function Page() {
   }
 
   const pills = mode === "image" ? IMAGE_PILLS : CHAT_PILLS;
+
+  // Side gutters respect the notch; the bottom gutter clears the home indicator.
+  const gutter =
+    "px-4 pl-4 max-sm:pl-[calc(1rem+var(--safe-l))] pr-4 max-sm:pr-[calc(1rem+var(--safe-r))] pb-[max(0.25rem,var(--safe-b))]";
   const latestReplyId = (() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const m = messages[i];
@@ -706,10 +710,15 @@ export default function Page() {
       />
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-1 px-2 pt-[var(--safe-t)] md:px-3">
+        <header className="flex min-h-14 shrink-0 items-center gap-1 px-2 pt-[var(--safe-t)] pb-2 md:px-3">
           <button
             onClick={() => { setSidebarOpen(true); saveSettings({ sidebarCollapsed: false }); }}
-            className="grid size-10 place-items-center rounded-lg text-neutral-400 hover:bg-ink-800 hover:text-neutral-100 md:hidden"
+            /* Must appear on desktop too: once collapsed, the only reopen
+               control is this button (the collapse button lives inside the
+               hidden sidebar). Hiding it at md+ left PC users stuck. */
+            className={`grid size-10 place-items-center rounded-lg text-neutral-400 hover:bg-ink-800 hover:text-neutral-100 ${
+              sidebarOpen ? "md:hidden" : ""
+            }`}
             title="Show sidebar" aria-label="Show sidebar"
           >
             <IconMenu className="size-5" />
@@ -739,7 +748,8 @@ export default function Page() {
           <button
             onClick={(e) => exportChat(e.shiftKey ? "json" : "md")}
             title="Export as Markdown (Shift+click for JSON)"
-            className="grid size-8 place-items-center rounded-md text-neutral-400 hover:bg-ink-700 hover:text-neutral-100"
+            aria-label="Export"
+            className="grid size-9 place-items-center rounded-md text-neutral-400 hover:bg-ink-700 hover:text-neutral-100 min-[420px]:size-8"
           >
             <IconDownload className="size-4" />
           </button>
@@ -747,7 +757,8 @@ export default function Page() {
 
         <div className={`flex min-h-0 flex-1 flex-col ${hasMessages ? "" : "justify-center"}`}>
           <div ref={scrollerRef} className="thin-scroll min-h-0 flex-1 overflow-y-auto">
-            <div className="mx-auto w-full max-w-content space-y-8 px-4 pt-1 pb-2.5 max-sm:px-4">
+            <div className="mx-auto w-full max-w-content space-y-8 px-4 pt-1 pb-2.5 max-sm:px-4
+                            pl-4 max-sm:pl-[calc(1rem+var(--safe-l))] pr-4 max-sm:pr-[calc(1rem+var(--safe-r))]">
               {!hasMessages ? (
                 <div className="pt-6 text-center">
                   <h1 className="mb-2 text-2xl font-medium tracking-tight sm:text-3xl">
@@ -780,16 +791,17 @@ export default function Page() {
             </div>
           </div>
 
+          {/* Safe-area gutters: notch on the sides, home indicator below. */}
           {!hasMessages ? (
             <>
-              <div className="w-full max-w-content shrink-0 px-4">{composer}</div>
-              <div className="mt-5 flex w-full flex-wrap justify-center gap-2 px-4">
+              <div className={`mx-auto w-full max-w-content shrink-0 ${gutter}`}>{composer}</div>
+              <div className={`pills-row mx-auto mt-5 flex w-full flex-wrap justify-center gap-2 ${gutter} pb-2`}>
                 {pills.map(({ label, Icon, tone, prompt }) => (
                   <button
                     key={label}
                     onClick={() => { setInput(`${prompt} `); }}
                     title={prompt}
-                    className="inline-flex items-center gap-2 rounded-full border border-ink-700 px-3.5 py-2 text-sm text-neutral-300 hover:bg-ink-800"
+                    className="inline-flex min-h-9 items-center gap-2 rounded-full border border-ink-700 px-3.5 py-2 text-sm text-neutral-300 hover:bg-ink-800"
                   >
                     <Icon className={`size-4 ${tone}`} />{label}
                   </button>
@@ -797,7 +809,7 @@ export default function Page() {
               </div>
             </>
           ) : (
-            <div className="w-full max-w-content shrink-0 px-4 pb-1">{composer}</div>
+            <div className={`mx-auto w-full max-w-content shrink-0 ${gutter} pb-1`}>{composer}</div>
           )}
         </div>
       </main>

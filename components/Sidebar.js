@@ -79,7 +79,7 @@ export default function Sidebar({
       </div>
 
       <div className="relative px-3 pt-5 pb-2">
-        <IconSearch className="pointer-events-none absolute top-[26px] left-[22px] text-neutral-500" />
+        <IconSearch className="pointer-events-none absolute top-1/2 left-[22px] -translate-y-1/2 text-neutral-500" />
         <input
           value={search}
           onChange={(e) => onSearch(e.target.value)}

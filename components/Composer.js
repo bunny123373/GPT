@@ -171,7 +171,7 @@ export default function Composer({
       </div>
 
       {hasMessages && (
-        <p className="mt-2 px-2 pb-2.5 text-center text-xs text-neutral-500">
+        <p className="short-hide mt-2 px-2 pb-2.5 text-center text-xs text-neutral-500">
           GPT can make mistakes — verify important info.
         </p>
       )}
