@@ -6,6 +6,7 @@ import Sidebar from "../components/Sidebar";
 import Composer from "../components/Composer";
 import Message from "../components/Message";
 import Gallery from "../components/Gallery";
+import ThemePicker from "../components/ThemePicker";
 import ModelMenu, { ModelTrigger } from "../components/ModelMenu";
 import AccountMenu, { buildAccountStats } from "../components/AccountMenu";
 import { SettingsDialog, ProfileDialog } from "../components/Dialogs";
@@ -35,28 +36,28 @@ const chatModels = new ModelCatalogue();
 const imageModels = new ImageCatalogue();
 
 const CHAT_PILLS = [
-  { label: "Help me write", Icon: IconPencil, tone: "text-violet-400",
+  { label: "Help me write", Icon: IconPencil, tone: "tone-violet",
     prompt: "Help me write a friendly, professional email asking my manager for a day off next Friday." },
-  { label: "Explain something", Icon: IconCap, tone: "text-sky-400",
+  { label: "Explain something", Icon: IconCap, tone: "tone-sky",
     prompt: "Explain how the stock market works in simple terms, with an example." },
-  { label: "Code", Icon: IconCode, tone: "text-rose-400",
+  { label: "Code", Icon: IconCode, tone: "tone-rose",
     prompt: "Write a JavaScript function that checks whether a string is a palindrome, and explain how it works." },
-  { label: "Brainstorm", Icon: IconBulb, tone: "text-amber-400",
+  { label: "Brainstorm", Icon: IconBulb, tone: "tone-amber",
     prompt: "Give me 10 creative weekend activity ideas for a rainy day." },
-  { label: "Make a plan", Icon: IconChecks, tone: "text-teal-400",
+  { label: "Make a plan", Icon: IconChecks, tone: "tone-teal",
     prompt: "Make me a simple 4-week beginner workout plan I can do at home." },
 ];
 
 const IMAGE_PILLS = [
-  { label: "Cozy cabin", Icon: IconHouse, tone: "text-emerald-400",
+  { label: "Cozy cabin", Icon: IconHouse, tone: "tone-emerald",
     prompt: "A cozy cabin in a snowy forest at dusk, warm light glowing from the windows, cinematic" },
-  { label: "Retro poster", Icon: IconFrame, tone: "text-amber-400",
+  { label: "Retro poster", Icon: IconFrame, tone: "tone-amber",
     prompt: "A 1970s retro travel poster for Mars, bold flat colours, screen print texture" },
-  { label: "Flat illustration", Icon: IconLayers, tone: "text-violet-400",
+  { label: "Flat illustration", Icon: IconLayers, tone: "tone-violet",
     prompt: "A flat vector illustration of a sleeping cat curled on a stack of books" },
-  { label: "Isometric", Icon: IconCube, tone: "text-sky-400",
+  { label: "Isometric", Icon: IconCube, tone: "tone-sky",
     prompt: "An isometric view of a tiny cosy library, cutaway, lots of plants" },
-  { label: "Bioluminescent", Icon: IconStar, tone: "text-teal-400",
+  { label: "Bioluminescent", Icon: IconStar, tone: "tone-teal",
     prompt: "A bioluminescent forest at midnight, glowing mushrooms, deep blues and greens" },
 ];
 
@@ -740,6 +741,7 @@ export default function Page() {
             <>
               <h1 className="text-base font-medium">Gallery</h1>
               <div className="flex-1" />
+              <ThemePicker compact />
             </>
           ) : (
             <>
@@ -764,6 +766,7 @@ export default function Page() {
 
               <div className="flex-1" />
               <div className="font-mono text-[11.5px] text-neutral-500 max-sm:hidden">{stats}</div>
+              <ThemePicker compact />
               <button
                 onClick={(e) => exportChat(e.shiftKey ? "json" : "md")}
                 title="Export as Markdown (Shift+click for JSON)"
@@ -881,8 +884,8 @@ export default function Page() {
           <div
             key={t.id}
             className={`animate-toast-in max-w-[90vw] rounded-[10px] border px-3.5 py-2 text-sm shadow-2xl
-                        ${t.kind === "err" ? "border-red-400/40 bg-ink-700 text-red-300"
-                          : t.kind === "ok" ? "border-emerald-400/40 bg-ink-700 text-emerald-200"
+                        ${t.kind === "err" ? "border-danger/40 bg-ink-700 text-danger"
+                          : t.kind === "ok" ? "border-success/40 bg-ink-700 text-success"
                           : "border-ink-600 bg-ink-700"}`}
           >
             {t.text}

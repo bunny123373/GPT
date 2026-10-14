@@ -289,7 +289,7 @@ export default function Gallery({ signedIn, onSignIn, onToast }) {
           </p>
           <button
             onClick={onSignIn}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-ink-950 hover:bg-emerald-400"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-hover"
           >
             Sign in
           </button>
@@ -302,7 +302,7 @@ export default function Gallery({ signedIn, onSignIn, onToast }) {
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Filters stay put while the grid scrolls — the whole point of a
           filterable grid is that changing the filter doesn't lose your place. */}
-      <div className="shrink-0 border-b border-black px-3 pb-2.5">
+      <div className="shrink-0 border-b border-ink-700 px-3 pb-2.5">
         <div className="mx-auto flex w-full max-w-content flex-wrap items-center gap-2">
           <div className="flex gap-1 rounded-lg bg-ink-850 p-1">
             {TABS.map(({ id, label, Icon }) => (
@@ -328,8 +328,8 @@ export default function Gallery({ signedIn, onSignIn, onToast }) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter by name"
             aria-label="Filter gallery by name"
-            className="min-w-0 flex-1 rounded-lg bg-ink-850 px-3 py-1.5 text-[13.5px]
-                       outline-none focus:border focus:border-ink-700 sm:max-w-xs"
+            className="min-w-0 flex-1 rounded-lg border border-ink-700 bg-ink-850 px-3 py-1.5 text-[13.5px]
+                       outline-none focus:border-ink-700 sm:max-w-xs"
           />
 
           <button
@@ -348,7 +348,7 @@ export default function Gallery({ signedIn, onSignIn, onToast }) {
                       pr-3 max-sm:pr-[calc(0.75rem+var(--safe-r))]">
         <div className="mx-auto w-full max-w-content">
           {error && (
-            <p className="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 px-3.5 py-2.5 text-sm text-red-300">
+            <p className="mb-4 rounded-lg border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
               {error}
             </p>
           )}

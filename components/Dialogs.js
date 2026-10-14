@@ -1,6 +1,7 @@
 "use client";
 
 import { TONES, profilePrompt } from "../lib/profile";
+import ThemePicker from "./ThemePicker";
 
 /** Shared modal shell. `dialog` semantics without the native element, so the
  *  content can be laid out however it likes. */
@@ -16,7 +17,7 @@ function Modal({ open, onClose, title, children, footer }) {
         aria-modal="true"
         aria-label={title}
         className="flex max-h-[calc(100dvh-2rem)] w-[min(620px,calc(100vw-1.5rem))]
-                   flex-col overflow-hidden rounded-2xl border border-ink-700 bg-ink-800 shadow-2xl"
+                   flex-col overflow-hidden rounded-2xl border border-ink-700 bg-ink-850 shadow-2xl"
       >
         <div className="flex shrink-0 items-center gap-2.5 border-b border-ink-700 px-3 py-3">
           <h2 className="flex-1 text-base font-semibold">{title}</h2>
@@ -31,7 +32,7 @@ function Modal({ open, onClose, title, children, footer }) {
   );
 }
 
-const field = "w-full rounded-lg bg-ink-750 px-3 py-2.5 text-sm outline-none focus:border focus:border-ink-600";
+const field = "w-full rounded-lg border border-ink-700 bg-ink-750 px-3 py-2.5 text-sm outline-none focus:border-ink-600";
 const label = "mb-1.5 block font-medium text-sm";
 
 /* ── Settings ────────────────────────────────────────────── */
@@ -79,6 +80,10 @@ export function SettingsDialog({ open, onClose, settings, onChange, onClearChat,
         />
       </div>
 
+      <div className="mb-5">
+        <ThemePicker />
+      </div>
+
       <div className="mb-5 flex flex-wrap items-center gap-4">
         <label className="flex cursor-pointer items-center gap-2 text-sm">
           <input type="checkbox" checked={!!settings.stream}
@@ -98,7 +103,7 @@ export function SettingsDialog({ open, onClose, settings, onChange, onClearChat,
           Clear this conversation
         </button>
         <button onClick={onDeleteAll}
-          className="rounded-lg px-2.5 py-1.5 text-sm text-neutral-400 hover:bg-ink-700 hover:text-red-400">
+          className="rounded-lg px-2.5 py-1.5 text-sm text-neutral-400 hover:bg-ink-700 hover:text-danger">
           Delete all data
         </button>
       </div>
@@ -180,7 +185,7 @@ export function ProfileDialog({
         <summary className="cursor-pointer list-none py-1.5 text-[13px] text-neutral-400">
           What gets sent with each message
         </summary>
-        <pre className="mt-1.5 max-h-[220px] overflow-y-auto rounded-[10px] border border-ink-700 bg-[#0d0d0d] p-3.5 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words text-neutral-400">
+        <pre className="mt-1.5 max-h-[220px] overflow-y-auto rounded-[10px] border border-ink-700 bg-code p-3.5 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words text-neutral-400">
           {block
             ? [basePrompt, block].filter(Boolean).join("\n\n")
             : "Nothing yet — answer a question above to see what gets sent."}

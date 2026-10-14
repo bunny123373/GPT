@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import {
-  DEFAULT_PREF, applyTheme, readPref, writePref,
+  getPrefSnapshot, getServerSnapshot, getThemeSnapshot, initTheme, setPref, subscribe,
 } from "../lib/theme";
 
 import { IconSun, IconMoon, IconMonitor } from "./icons";
@@ -17,37 +17,21 @@ const OPTIONS = [
 ];
 
 /**
- * Three-way theme picker.
+ * Three-way theme picker, driven by the shared store in lib/theme.
  *
- * Picking "System" stores the *preference*, not the resolved theme, and keeps
- * listening: a phone that flips to dark at sunset must re-theme an already
- * open tab, which only works if we subscribe rather than resolve once.
+ * Two of these are live at once (topbar and Settings), so state lives in the
+ * module rather than in the component — otherwise the topbar icon would keep
+ * claiming "night" after Settings had switched to light.
  */
 export default function ThemePicker({ compact = false }) {
-  const [pref, setPref] = useState(DEFAULT_PREF);
-  const [theme, setTheme] = useState("night");
+  // Reading from a store that is not yet initialised yields the server
+  // snapshot, so hydration matches and no flash is introduced.
+  const pref = useSyncExternalStore(subscribe, getPrefSnapshot, getServerSnapshot);
+  const theme = useSyncExternalStore(subscribe, getThemeSnapshot, getServerSnapshot);
 
-  // Read storage after mount, not during render: the server has no localStorage
-  // and rendering night then switching would be the exact flash we avoided.
-  useEffect(() => {
-    const stored = readPref();
-    setPref(stored);
-    setTheme(applyTheme(stored));
-  }, []);
-
-  // Follow the OS while, and only while, the preference is "system".
-  useEffect(() => {
-    if (pref !== "system" || typeof window === "undefined" || !window.matchMedia) return undefined;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => setTheme(applyTheme("system", mq.matches));
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, [pref]);
-
-  const choose = useCallback((id) => {
-    setPref(writePref(id));
-    setTheme(applyTheme(id));
-  }, []);
+  // Adopt the stored preference and subscribe to the OS. Runs once per mount;
+  // initTheme is idempotent, so the second picker is a no-op.
+  useEffect(() => { initTheme(); }, []);
 
   if (compact) {
     /* Icon-only variant for the topbar. Toggles between the two concrete
@@ -56,7 +40,7 @@ export default function ThemePicker({ compact = false }) {
     const Icon = theme === "night" ? IconSun : IconMoon;
     return (
       <button
-        onClick={() => choose(next)}
+        onClick={() => setPref(next)}
         title={`Switch to ${next} mode`}
         aria-label={`Switch to ${next} mode`}
         className="grid size-9 place-items-center rounded-md text-neutral-400 hover:bg-ink-700 hover:text-neutral-100 min-[420px]:size-8"
@@ -81,7 +65,7 @@ export default function ThemePicker({ compact = false }) {
               key={id}
               role="radio"
               aria-checked={active}
-              onClick={() => choose(id)}
+              onClick={() => setPref(id)}
               className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2.5 text-xs transition ${
                 active
                   ? "bg-ink-700 text-neutral-100 shadow-sm"

@@ -38,7 +38,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-[min(260px,82vw)] flex-col bg-ink-950 border-r border-black
+      className={`fixed inset-y-0 left-0 z-40 flex w-[min(260px,82vw)] flex-col bg-ink-950 border-r border-ink-700
                   transition-transform duration-200 md:static md:translate-x-0
                   ${open ? "translate-x-0 shadow-2xl" : "-translate-x-[102%] md:hidden"}`}
     >
@@ -76,7 +76,7 @@ export default function Sidebar({
             <Icon className={`size-4 ${view === id ? "text-accent" : ""}`} />
             {label}
             {id === "ask" && profileOn && (
-              <span className="ml-auto rounded-full bg-accent-soft px-2 py-px text-[11px] text-emerald-300">
+              <span className="ml-auto rounded-full bg-accent-soft px-2 py-px text-[11px] text-accent">
                 on
               </span>
             )}
@@ -135,7 +135,7 @@ export default function Sidebar({
                 onClick={() => onDelete(row.conv.id)}
                 title="Delete chat"
                 aria-label={`Delete "${row.conv.title}"`}
-                className="mr-1 rounded-md p-1.5 text-neutral-400 hover:bg-ink-700 hover:text-red-400
+                className="mr-1 rounded-md p-1.5 text-neutral-400 hover:bg-ink-700 hover:text-danger
                            md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100
                            md:max-md:opacity-100"
               >
@@ -146,7 +146,7 @@ export default function Sidebar({
         )}
       </nav>
 
-      <div className="relative border-t border-black p-2">{account}</div>
+      <div className="relative border-t border-ink-700 p-2">{account}</div>
     </aside>
   );
 }

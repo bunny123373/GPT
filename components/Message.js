@@ -19,7 +19,7 @@ function ReplyActions({ message, onCopy, onRegenerate, onShowImage }) {
         <IconRedo className="size-4" /><span>Regenerate</span>
       </button>
       <button onClick={onShowImage} title="Turn this reply into an image"
-        className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px] text-accent hover:bg-accent-soft hover:text-emerald-300">
+        className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px] text-accent hover:bg-accent-soft">
         <IconSparkle className="size-4" /><span>Show me an image.</span>
       </button>
       <span className="ml-1.5 text-xs text-neutral-500">
@@ -40,11 +40,11 @@ function ImageCard({ message, onDownload, onSave, onRegenerate, onDelete }) {
 
   return (
     <div className="max-w-[448px]">
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-ink-800">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-ink-850">
         {message.pending ? (
           <div className={`absolute inset-0 grid place-items-center ${!failed ? "animate-plating" : ""}`}>
             <div className="flex flex-col items-center gap-3 text-sm text-neutral-400">
-              <IconSparkle className="size-7 animate-pulse text-emerald-400" />
+              <IconSparkle className="size-7 animate-pulse text-accent" />
               <span className="animate-fade-text">Creating image…</span>
             </div>
           </div>
@@ -81,7 +81,7 @@ function ImageCard({ message, onDownload, onSave, onRegenerate, onDelete }) {
       )}
 
       {message.error && (
-        <div className="mt-2.5 rounded-lg border border-red-400/30 bg-red-500/10 px-3.5 py-2.5 text-sm text-red-300">
+        <div className="mt-2.5 rounded-lg border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
           {asText(message.error, "The request failed.")}
         </div>
       )}
@@ -161,7 +161,7 @@ export default function Message({
         )}
 
         {message.reasoning && (
-          <details className="mb-3 overflow-hidden rounded-lg border border-ink-700 bg-ink-800">
+          <details className="mb-3 overflow-hidden rounded-lg border border-ink-700 bg-ink-850">
             <summary className="cursor-pointer list-none px-3.5 py-2 text-[13px] text-neutral-400">
               Model reasoning
             </summary>
@@ -184,7 +184,7 @@ export default function Message({
         )}
 
         {message.error && (
-          <div className="mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3.5 py-2.5 text-sm whitespace-pre-wrap text-red-300">
+          <div className="mt-3 rounded-lg border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-sm whitespace-pre-wrap text-danger">
             {asText(message.error, "The request failed.")}
           </div>
         )}

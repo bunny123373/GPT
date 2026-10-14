@@ -42,7 +42,7 @@ export default function AccountMenu({ user, stats, open, onToggle, onSettings, o
         className="flex w-full items-center gap-3 rounded-lg p-2 text-left hover:bg-ink-800"
       >
         <span
-          className="grid size-8 shrink-0 place-items-center rounded-full bg-emerald-600 bg-cover bg-center text-sm font-semibold text-white"
+          className="grid size-8 shrink-0 place-items-center rounded-full bg-accent bg-cover bg-center text-sm font-semibold text-on-accent"
           style={user?.picture ? { backgroundImage: `url(${user.picture})` } : undefined}
         >
           {!user?.picture && name.slice(0, 1).toUpperCase()}
@@ -57,11 +57,11 @@ export default function AccountMenu({ user, stats, open, onToggle, onSettings, o
         <div
           role="menu"
           className="absolute bottom-[calc(100%+6px)] right-2 left-2 z-45 animate-menu-in rounded-2xl
-                     border border-ink-700 bg-ink-800 p-1.5 shadow-2xl"
+                     border border-ink-700 bg-ink-850 p-1.5 shadow-2xl"
         >
           <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-3">
             <span
-              className="grid size-8 shrink-0 place-items-center rounded-full bg-emerald-600 bg-cover bg-center text-sm font-semibold text-white"
+              className="grid size-8 shrink-0 place-items-center rounded-full bg-accent bg-cover bg-center text-sm font-semibold text-on-accent"
               style={user?.picture ? { backgroundImage: `url(${user.picture})` } : undefined}
             >
               {!user?.picture && name.slice(0, 1).toUpperCase()}

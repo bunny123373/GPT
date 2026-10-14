@@ -6,8 +6,8 @@ export default function manifest() {
       "A private AI assistant for writing, answering questions, coding and creating images.",
     start_url: "/",
     display: "standalone",
-    background_color: "#212121",
-    theme_color: "#212121",
+    background_color: "#1f1e1d",
+    theme_color: "#1f1e1d",
     icons: [
       { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },

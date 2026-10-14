@@ -37,7 +37,7 @@ export default function Composer({
       {attachments.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-2">
           {attachments.map((a, i) => (
-            <div key={i} className="relative size-[60px] overflow-hidden rounded-[10px] border border-ink-700 bg-ink-800">
+            <div key={i} className="relative size-[60px] overflow-hidden rounded-[10px] border border-ink-700 bg-ink-850">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={a.dataUrl} alt={a.name} className="size-full object-cover" />
               <button
@@ -52,7 +52,7 @@ export default function Composer({
         </div>
       )}
 
-      <div className="rounded-[28px] bg-ink-750 px-3 pt-3 pb-2">
+      <div className="rounded-[28px] border border-ink-700 bg-ink-750 px-3 pt-3 pb-2">
         {image && (
           <div className="mb-2 flex flex-wrap items-center gap-2 border-b border-ink-700 pb-2.5 px-2">
             <label className="flex items-center gap-1.5 text-xs text-neutral-500">
@@ -121,7 +121,7 @@ export default function Composer({
             className={`flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors
                         disabled:opacity-40
                         ${image
-                          ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-300"
+                          ? "border-success/40 bg-success-soft text-success"
                           : "border-ink-600 text-neutral-300 hover:bg-ink-700"}`}
           >
             <IconImage className="size-4" />

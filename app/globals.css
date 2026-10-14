@@ -64,9 +64,16 @@
 
   --color-accent: var(--c-accent);
   --color-accent-soft: var(--c-accent-soft);
+  --color-accent-hover: var(--c-accent-hover);
+  /* Text/icon colour that sits ON an accent fill. Not `text-white` and not
+     `text-ink-950`: the accent is mid-tone, so which of the two is legible
+     flips with the theme. */
+  --color-on-accent: var(--c-on-accent);
   --color-link: var(--c-link);
   --color-danger: var(--c-danger);
   --color-danger-soft: var(--c-danger-soft);
+  --color-success: var(--c-success);
+  --color-success-soft: var(--c-success-soft);
 
   /* A deliberately inverted pair, for controls that must stay legible
      in either theme (the send button, Save). At night it is a light
@@ -103,10 +110,14 @@
   --c-fg-ghost: #6b6a63;
 
   --c-accent: #d97757;
+  --c-accent-hover: #e08a6d;
   --c-accent-soft: rgb(217 119 87 / 0.18);
+  --c-on-accent: #1f1e1d;   /* dark text: the night accent is mid-light */
   --c-link: #d98a6c;
   --c-danger: #e5645e;
   --c-danger-soft: rgb(229 100 94 / 0.14);
+  --c-success: #4ec98f;
+  --c-success-soft: rgb(78 201 143 / 0.14);
 
   --c-invert-bg: #f5f4ef;
   --c-invert-fg: #1f1e1d;
@@ -114,6 +125,16 @@
 
   --c-code-bg: #0d0d0c;
   --c-code-fg: #e5e3da;
+
+  /* Decorative icon hues for the starter pills. Bright pastels read well on
+     charcoal; on cream the same values turn into unreadable smudges, so the
+     light theme uses the deeper end of each ramp instead. */
+  --c-tone-violet: #a78bfa;
+  --c-tone-sky: #38bdf8;
+  --c-tone-rose: #fb7185;
+  --c-tone-amber: #fbbf24;
+  --c-tone-teal: #2dd4bf;
+  --c-tone-emerald: #34d399;
 }
 
 /* ── Light ─────────────────────────────────────────────────────
@@ -126,7 +147,10 @@
   --c-sunken: #f0eee6;      /* the sidebar sits just under the page */
   --c-base: #faf9f5;
   --c-raised: #ffffff;
-  --c-hover: #f0eee6;
+  /* Distinct from --c-sunken on purpose. If hover equalled the sidebar there
+     would be no hover feedback and the active nav item would vanish into it —
+     the one place the "role, not lightness" rule has to be stated explicitly. */
+  --c-hover: #e8e5dc;
   --c-field: #ffffff;
   --c-line: #e5e3dc;
   --c-line-strong: #cfccc1;
@@ -135,15 +159,26 @@
   --c-fg: #2f2f2c;
   --c-fg-soft: #52514c;
   --c-fg-muted: #6b6a63;
-  --c-fg-faint: #8a8981;
-  --c-fg-ghost: #a3a299;
+  /* Tertiary text. The night value already clears 4.5:1 against the charcoal,
+     so the light one is tuned to do the same against cream rather than simply
+     being "the grey that looked right on dark". */
+  --c-fg-faint: #75746e;
+  --c-fg-ghost: #96958c;
 
-  /* Darker than the night accent so it still clears 4.5:1 on cream. */
-  --c-accent: #c15f3c;
-  --c-accent-soft: rgb(193 95 60 / 0.12);
+  /* Deliberately darker than the night accent. `text-accent` is used for text
+     ("Show me an image.", the profile "on" badge), so the terracotta has to
+     clear 4.5:1 on cream — a straight port of the night value only managed
+     4.0:1. Hover darkens rather than lightens, which keeps white on it legible
+     throughout the press. */
+  --c-accent: #b3542f;
+  --c-accent-hover: #a04a29;
+  --c-accent-soft: rgb(179 84 47 / 0.12);
+  --c-on-accent: #ffffff;   /* white text: the day accent is dark enough */
   --c-link: #b5562f;
   --c-danger: #c4362f;
   --c-danger-soft: rgb(196 54 47 / 0.1);
+  --c-success: #1f7a4d;
+  --c-success-soft: rgb(31 122 77 / 0.1);
 
   --c-invert-bg: #1f1e1d;
   --c-invert-fg: #faf9f5;
@@ -151,6 +186,13 @@
 
   --c-code-bg: #f2f0e9;
   --c-code-fg: #2f2f2c;
+
+  --c-tone-violet: #6d47c9;
+  --c-tone-sky: #0369a1;
+  --c-tone-rose: #be123c;
+  --c-tone-amber: #a16207;
+  --c-tone-teal: #0f766e;
+  --c-tone-emerald: #15803d;
 }
 
 @keyframes pulse-dot {
@@ -243,6 +285,17 @@ body {
 /* Centring that degrades safely: `justify-content: center` clips the top of
    an overflowing scroll container, `safe center` aligns to the start instead. */
 .safe-center { justify-content: safe center; }
+
+/* ── Starter-pill icon hues ─────────────────────────────── */
+/* Plain classes rather than Tailwind colour utilities because a hue has to
+   resolve differently per theme, and there is no `dark:` variant here to
+   express that — the theme is an attribute, not a media query. */
+.tone-violet { color: var(--c-tone-violet); }
+.tone-sky { color: var(--c-tone-sky); }
+.tone-rose { color: var(--c-tone-rose); }
+.tone-amber { color: var(--c-tone-amber); }
+.tone-teal { color: var(--c-tone-teal); }
+.tone-emerald { color: var(--c-tone-emerald); }
 
 /* ── Short viewports (landscape phones) ────────────────── */
 /* At ~375px tall the dock would otherwise eat the reading area, so the

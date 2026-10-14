@@ -1,31 +1,55 @@
 # GPT
 
 A streaming AI chat **and image generation** app built on [Puter.js](https://developer.puter.com).
-No backend, no API keys, no build step — pick any of 500+ chat models or an image model, and your
-conversations are stored in your own Puter account.
+No backend, no API keys, no server of your own — pick any of 500+ chat models or an image model, and
+your conversations are stored in your own Puter account.
 
-![Stack](https://img.shields.io/badge/vanilla-JS-f7df1e) ![Deps](https://img.shields.io/badge/dependencies-0-3ddc97)
+![Stack](https://img.shields.io/badge/Next.js-16-000000) ![React](https://img.shields.io/badge/React-19-61dafb) ![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8)
 
-The visual language — palette, component metrics, markdown treatment and motion — is adopted from
-the reference design in `C:\Users\korra\Downloads\chat`.
+**Night by default**, with a light mode and a system-following option — see [Themes](#themes).
 
 ---
 
+## Themes
+
+Night is the default. A three-way picker — **Night / Light / System** — lives in Settings, with a
+one-click toggle in the topbar. The preference is stored in `localStorage` under `gpt-theme` and
+resolved *before first paint* by a small inline script in `app/layout.js`, so a light-mode user never
+sees a dark flash. `lib/theme.js` is the whole implementation; `test/theme.js` executes the boot
+script against a stub DOM rather than trusting it.
+
+`gpt-theme` is deliberately **not** under the `puter-chat:` prefix: "Delete all data" sweeps every key
+with that prefix, and clearing your chats should not also flip the app back to dark.
+
 ## Design tokens
 
-| Token | Value | Used for |
-|---|---|---|
-| `--ink-950` | `#171717` | Sidebar |
-| `--ink-900` | `#212121` | Canvas |
-| `--ink-800` | `#2f2f2f` | Rows, dialogs, model menu |
-| `--ink-750` | `#303030` | Composer, user bubble |
-| `--ink-700` | `#3a3a3a` | Hairlines, scrollbars |
-| `--ink-600` | `#4a4a4a` | Borders |
-| `--accent` | `#10a37f` | Image mode, focus rings |
-| `--link` | `#7ab7ff` | Markdown links |
+Two palettes — warm charcoal and warm off-white — behind one set of names. Every colour utility is
+`bg-ink-*`, `text-neutral-*` or a semantic token, and `@theme inline` in `app/globals.css` points each
+one at a CSS variable (`--c-*`) that the theme redefines. So `bg-ink-800` means *"the hover surface"*
+in both themes, and switching themes re-points every utility at once — no component mentions a
+literal colour.
 
-Type is **Inter** (400/500/600/700). The composer is a 28px-radius `#303030` slab and the header
-is 56px — both matching the reference.
+| Token | Role | Night | Light |
+|---|---|---|---|
+| `--c-sunken` | `bg-ink-950` — sidebar | `#131312` | `#f0eee6` |
+| `--c-base` | `bg-ink-900` — canvas | `#1f1e1d` | `#faf9f5` |
+| `--c-raised` | `bg-ink-850` — cards | `#262625` | `#ffffff` |
+| `--c-hover` | `bg-ink-800` — hovered rows | `#30302e` | `#e8e5dc` |
+| `--c-field` | `bg-ink-750` — composer | `#2b2b29` | `#ffffff` |
+| `--c-line` | `bg-ink-700` — hairlines | `#3e3e3a` | `#e5e3dc` |
+| `--c-line-strong` | `bg-ink-600` — borders | `#52514c` | `#cfccc1` |
+| `--c-fg-strong` | `text-neutral-100` | `#f5f4ef` | `#141413` |
+| `--c-fg-muted` | `text-neutral-400` | `#a8a69c` | `#6b6a63` |
+| `--c-accent` | primary accent | `#d97757` | `#b3542f` |
+| `--c-invert-*` | send button | light on dark | dark on light |
+| `--c-success` / `--c-danger` | status | `#4ec98f` / `#e5645e` | `#1f7a4d` / `#c4362f` |
+
+The light canvas is a warm off-white rather than `#fff`: a pure-white page against white cards has no
+depth. Some elements are intentionally **fixed** — the gallery lightbox and the badges that sit on a
+photo use hard light-on-dark values, because they sit on a dark scrim or an image in both themes and
+would otherwise invert into dark-on-dark.
+
+Type is **Inter** (400/500/600/700). The composer is a rounded slab and the header is 56px.
 
 ## Responsive layout
 
@@ -114,30 +138,32 @@ Long words wrap at the word boundary rather than being chopped mid-character
 | **Anchored model picker** | Dropdown under the header button, searchable, grouped by provider, with live pricing — no full-screen takeover |
 | **Account & usage menu** | ChatGPT-style avatar dropdown showing your real Puter storage, this month's calls and spend, plus Settings and sign-out |
 | **Export** | Markdown (or Shift+click for JSON) |
+| **Light & dark themes** | Night by default, with a light mode and a system-following option |
+| **Gallery** | Browse generated images and uploads in a filterable grid |
 | **Dark, responsive** | Works down to mobile widths |
 
 ## Run it
 
-Puter identifies an app by its origin, so the app **must be served over HTTP**. Opening
-`index.html` from disk (`file://`) will not work.
-
 ```bash
 cd "puter chat"
-npm start            # http://localhost:3000
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Any static server works just as well:
+For a production run:
 
 ```bash
-python -m http.server 8000      # then open http://localhost:8000
-npx serve .
+npm run build
+npm start
 ```
+
+Puter identifies an app by its origin, so it must be served over HTTP either way.
 
 Then open the URL, sign in with Puter (optional), and start chatting.
 
 ## Modes
 
-An **Image** toggle sits inside the message box (it turns green and shows an ✕ when active, plus
+An **Image** toggle sits inside the message box (it lights up in the accent colour and shows an ✕ when active, plus
 shape / quality / test controls above the input). **Create image** in the sidebar starts a fresh
 chat already in that mode.
 
@@ -158,29 +184,45 @@ fades in — with download, copy-prompt, regenerate and *Save to Puter drive*.
 ## Tests
 
 ```bash
-npm test           # everything
-npm run test:unit  # markdown, chat engine, image generation, storage — no network
-npm run test:dom   # app.js ↔ index.html ↔ styles.css contract
+npm test           # everything below, plus the static-asset guard
+npm run test:unit  # markdown, chat engine, image generation, profile, storage
+npm run test:theme # the theme store and the pre-paint boot script
+npm run test:gallery
+npm run test:css   # rebuilds, then checks every class token compiles
 npm run test:sdk   # fetches the live Puter.js bundle and checks the API surface
 ```
 
-229 assertions across five suites. The unit suites run against a fake `puter` global, so they
+**569 assertions across nine suites.** The unit suites run against a fake `puter` global, so they
 cover streaming, aborts, error chunks, reasoning, images, image option building, quality-tier
-whitelisting, usage capture, the 400 KB KV ceiling and Markdown XSS escaping without needing a
-browser or an account.
+whitelisting, usage capture, the 400 KB KV ceiling, Markdown XSS escaping and theme resolution
+without needing a browser or an account. The theme suite goes a step further and *executes* the
+pre-paint boot script against a stub DOM, because a script that must run before React exists is
+exactly the kind of code that silently stops working. `test/tokens.mjs` then checks the stylesheet
+itself: both palettes must declare the same tokens, every `var(--c-*)` must resolve, every colour that
+has to differ between themes must actually differ, and every text tone must clear a contrast floor
+against its own canvas — a token missing from one palette does not error, it just inherits the wrong
+value and leaves one unreadable element. That last check is not theoretical: it caught the accent
+landing at 4.0:1 on cream when the overnight value had looked fine.
+
+`test:css` is the safety net for styling: it walks every `className` in `app/` and `components/`,
+then asserts each Tailwind token actually appears in the compiled stylesheet — the usual cause of
+"the CSS looks wrong" is a utility that silently failed to generate.
 
 ## How it works
 
 ```
-index.html          markup + dialogs
-css/styles.css      all styling
-js/app.js           UI wiring, chat flow, image flow, streaming render loop
-js/ai.js            chat: everything that talks to puter.ai.chat (models, uploads, errors)
-js/imagegen.js      image generation: puter.ai.txt2img, model catalogue, option building
-js/store.js         persistence adapter: puter.kv, falling back to localStorage
-js/conversations.js conversation model, titles, size limits
-js/markdown.js      dependency-free Markdown renderer
-server.js           zero-dependency static server for local dev
+app/layout.js         <html>, the pre-paint theme script, fonts, metadata
+app/page.js           the client shell: view state, chat flow, gallery wiring
+app/globals.css       design tokens, both palettes, markdown styles
+components/           Sidebar, Composer, Message, Gallery, ModelMenu, Dialogs,
+                      AccountMenu, ThemePicker, icons
+lib/ai.js             chat: everything that talks to puter.ai.chat (models, uploads, errors)
+lib/imagegen.js       image generation: puter.ai.txt2img, model catalogue, option building
+lib/store.js          persistence adapter: puter.kv, falling back to localStorage
+lib/conversations.js  conversation model, titles, size limits
+lib/gallery.js        gallery data layer: classify, sort, filter, scan the drive
+lib/theme.js          theme store + the boot script
+lib/markdown.js       dependency-free Markdown renderer
 ```
 
 **Storage.** Each conversation is one item inside a single KV entry keyed by its id
@@ -221,14 +263,13 @@ goes through `asText()`, so a JSON rejection can never surface as literal `[obje
 
 ## Deploying
 
-The app is fully static, so any static host works:
+It is a Next.js app, so it needs a build step — any Node host works, and Vercel is the least fuss:
 
 ```bash
-npx @heyputer/cli deploy          # or:
-# GitHub Pages, Netlify, Vercel, Cloudflare Pages — just upload the directory
+npx vercel --prod        # first run links/creates the project
 ```
 
-No server-side code, no environment variables, no secrets to leak.
+No environment variables and no secrets to leak: everything talks to Puter from the browser.
 
 ## Notes
 

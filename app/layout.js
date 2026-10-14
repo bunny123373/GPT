@@ -29,12 +29,10 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  // Both are declared with media queries so the browser chrome matches the
-  // theme actually in use rather than always claiming the dark one.
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#1f1e1d" },
-    { media: "(prefers-color-scheme: light)", color: "#faf9f5" },
-  ],
+  // Server-rendered fallback only — the boot script and ThemePicker rewrite
+  // this meta to match the resolved theme, which a media query cannot express
+  // once the user has forced light or night against their OS setting.
+  themeColor: "#1f1e1d",
 };
 
 export default function RootLayout({ children }) {
