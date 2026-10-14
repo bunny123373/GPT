@@ -3,7 +3,7 @@
  *   node test/run.js
  */
 
-import { renderMarkdown, toPlainText } from '../js/markdown.js';
+import { renderMarkdown, toPlainText } from '../lib/markdown.js';
 
 let pass = 0, fail = 0;
 
@@ -65,7 +65,7 @@ check('plain text strips code', toPlainText('a ```js\ncode\n``` b'), '[code]');
 
 /* ── toApiMessages ─────────────────────────────────────── */
 console.log('\nmessages');
-const { toApiMessages } = await import('../js/ai.js');
+const { toApiMessages } = await import('../lib/ai.js');
 
 const api = toApiMessages(
   [
@@ -91,7 +91,7 @@ refute('no system when blank', JSON.stringify(toApiMessages([{ role: 'user', tex
 
 /* ── price formatting ──────────────────────────────────── */
 console.log('\npricing');
-const { formatPrice } = await import('../js/ai.js');
+const { formatPrice } = await import('../lib/ai.js');
 check('cents to dollars', formatPrice({ currency: 'usd-cents', input: 500, output: 2500 }), '$5.00 in / $25.00 out');
 check('cheap model',      formatPrice({ input: 1, output: 2 }), '$0.01 in / $0.02 out');
 check('free',             formatPrice({ input: 0, output: 0 }), 'free');
@@ -99,7 +99,7 @@ check('missing cost',     formatPrice(undefined), '');
 
 /* ── error messages ────────────────────────────────────── */
 console.log('\nerrors');
-const { describeError, asText } = await import('../js/ai.js');
+const { describeError, asText } = await import('../lib/ai.js');
 check('abort',        describeError({ name: 'AbortError', message: 'aborted' }), 'Stopped.');
 check('network',      describeError({ message: 'x', code: 'network_error' }), 'Network error');
 check('timeout',      describeError({ message: 'x', code: 'request_timeout' }), 'too long');

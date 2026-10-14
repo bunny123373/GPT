@@ -27,8 +27,8 @@ globalThis.localStorage = {
 };
 delete globalThis.puter; // force the local backend
 
-const { store } = await import('../js/store.js');
-const conv = await import('../js/conversations.js');
+const { store } = await import('../lib/store.js');
+const conv = await import('../lib/conversations.js');
 
 /* ── backend selection ───────────────────────────────────── */
 console.log('\nbackend');

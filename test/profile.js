@@ -9,7 +9,7 @@
 const {
   TONES, BLANK_PROFILE, hasProfile, normalise,
   profilePrompt, effectiveSystemPrompt, profileSummary,
-} = await import('../js/profile.js');
+} = await import('../lib/profile.js');
 
 let pass = 0, fail = 0;
 const eq = (name, actual, expected) => {

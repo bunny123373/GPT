@@ -6,7 +6,7 @@
  *   node test/engine.js
  */
 
-const runTurn = (await import('../js/ai.js')).runTurn;
+const runTurn = (await import('../lib/ai.js')).runTurn;
 
 // ── a fake streaming chat() ────────────────────────────────
 // Mirrors the real SDK's contract: it honours the AbortSignal and rejects with

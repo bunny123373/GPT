@@ -10,8 +10,8 @@
 const {
   ImageCatalogue, generateImage, buildOptions, qualityTiersFor,
   ASPECT_RATIOS, ASPECT_BY_ID, imageOutputPath, srcOf,
-} = await import('../js/imagegen.js');
-const { describeError, asText } = await import('../js/ai.js');
+} = await import('../lib/imagegen.js');
+const { describeError, asText } = await import('../lib/ai.js');
 
 let pass = 0, fail = 0;
 const eq = (name, actual, expected) => {
