@@ -755,23 +755,13 @@ export default function Page() {
           </button>
         </header>
 
-        <div className={`flex min-h-0 flex-1 flex-col ${hasMessages ? "" : "justify-center"}`}>
-          <div ref={scrollerRef} className="thin-scroll min-h-0 flex-1 overflow-y-auto">
-            <div className="mx-auto w-full max-w-content space-y-8 px-4 pt-1 pb-2.5 max-sm:px-4
-                            pl-4 max-sm:pl-[calc(1rem+var(--safe-l))] pr-4 max-sm:pr-[calc(1rem+var(--safe-r))]">
-              {!hasMessages ? (
-                <div className="pt-6 text-center">
-                  <h1 className="mb-2 text-2xl font-medium tracking-tight sm:text-3xl">
-                    Ask GPT anything.
-                  </h1>
-                  <p className="text-sm text-neutral-400">
-                    {mode === "image"
-                      ? "Describe a picture and any image model will draw it."
-                      : "500+ models, one place, your data stays in your Puter account."}
-                  </p>
-                </div>
-              ) : (
-                messages.map((m) => (
+        {hasMessages ? (
+          /* ---- Conversation: thread scrolls, composer docks to the bottom ---- */
+          <>
+            <div ref={scrollerRef} className="thin-scroll min-h-0 flex-1 overflow-y-auto">
+              <div className="mx-auto w-full max-w-content space-y-8 px-4 pt-1 pb-2.5 max-sm:px-4
+                              pl-4 max-sm:pl-[calc(1rem+var(--safe-l))] pr-4 max-sm:pr-[calc(1rem+var(--safe-r))]">
+                {messages.map((m) => (
                   <Message
                     key={m.id}
                     message={m}
@@ -786,16 +776,31 @@ export default function Page() {
                     onDownload={downloadImage}
                     onSave={saveImageToDrive}
                   />
-                ))
-              )}
+                ))}
+              </div>
             </div>
-          </div>
+            <div className={`mx-auto w-full max-w-content shrink-0 ${gutter} pb-1`}>{composer}</div>
+          </>
+        ) : (
+          /* ---- New chat: greeting, composer and pills centre as one group,
+                 both axes, at every width. `safe center` keeps the top
+                 reachable when the group is taller than the viewport. ---- */
+          <div className="safe-center thin-scroll flex min-h-0 flex-1 flex-col overflow-y-auto px-4">
+            <div className="mx-auto my-6 w-full max-w-content">
+              <div className="mb-7 text-center">
+                <h1 className="mb-2 text-2xl font-medium tracking-tight sm:text-3xl">
+                  Ask GPT anything.
+                </h1>
+                <p className="text-sm text-neutral-400">
+                  {mode === "image"
+                    ? "Describe a picture and any image model will draw it."
+                    : "500+ models, one place, your data stays in your Puter account."}
+                </p>
+              </div>
 
-          {/* Safe-area gutters: notch on the sides, home indicator below. */}
-          {!hasMessages ? (
-            <>
-              <div className={`mx-auto w-full max-w-content shrink-0 ${gutter}`}>{composer}</div>
-              <div className={`pills-row mx-auto mt-5 flex w-full flex-wrap justify-center gap-2 ${gutter} pb-2`}>
+              {composer}
+
+              <div className="pills-row mx-auto mt-5 flex w-full flex-wrap justify-center gap-2 pb-2">
                 {pills.map(({ label, Icon, tone, prompt }) => (
                   <button
                     key={label}
@@ -807,11 +812,9 @@ export default function Page() {
                   </button>
                 ))}
               </div>
-            </>
-          ) : (
-            <div className={`mx-auto w-full max-w-content shrink-0 ${gutter} pb-1`}>{composer}</div>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <SettingsDialog

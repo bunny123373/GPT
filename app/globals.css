@@ -130,6 +130,10 @@ body {
 .md th { font-weight: 600; color: var(--color-strong); }
 .md img { max-width: 280px; max-height: 280px; border-radius: 16px; border: 1px solid var(--color-ink-700); }
 
+/* Centring that degrades safely: `justify-content: center` clips the top of
+   an overflowing scroll container, `safe center` aligns to the start instead. */
+.safe-center { justify-content: safe center; }
+
 /* ── Short viewports (landscape phones) ────────────────── */
 /* At ~375px tall the dock would otherwise eat the reading area, so the
    disclaimer goes and the textarea is capped. */
