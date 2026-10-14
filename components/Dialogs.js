@@ -128,7 +128,7 @@ export function ProfileDialog({
           </button>
           <div className="flex-1" />
           <button onClick={() => onSave(value, { commit: true })}
-            className="rounded-lg bg-white px-3.5 py-1.5 text-sm font-medium text-ink-900 hover:bg-neutral-200">
+            className="rounded-lg bg-invert px-3.5 py-1.5 text-sm font-medium text-invert-fg hover:bg-invert-hover">
             Save
           </button>
         </div>

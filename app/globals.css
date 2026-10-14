@@ -1,30 +1,9 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Design tokens — ported from the hand-written stylesheet so the
-   ink palette, radii and motion survive the Tailwind migration.
+   Design tokens — non-colour scales, layout and motion.
    ============================================================ */
 @theme {
-  --color-ink-950: #171717;
-  --color-ink-900: #212121;
-  --color-ink-850: #262626;
-  --color-ink-800: #2f2f2f;
-  --color-ink-750: #303030;
-  --color-ink-700: #3a3a3a;
-  --color-ink-600: #4a4a4a;
-
-  --color-body: #ececec;
-  --color-strong: #ffffff;
-  --color-dim: #b4b4b4;
-  --color-mute: #9b9b9b;
-  --color-faint: #737373;
-
-  --color-accent: #10a37f;
-  --color-accent-soft: rgb(16 163 127 / 0.16);
-  --color-link: #7ab7ff;
-  --color-danger: #f87171;
-  --color-danger-soft: rgb(248 113 113 / 0.12);
-
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
 
@@ -42,13 +21,145 @@
   --container-sidebar: 260px;
 }
 
+/* ============================================================
+   Colour — the only part that changes with the theme.
+
+   Every colour utility in the app is one of the names below, so
+   switching themes re-points them at a different set of raw values
+   WITHOUT editing a single component. That is the whole point:
+   `bg-ink-800` means "the hover surface" in both themes, never a
+   literal grey that only happens to work on a dark page.
+
+   `@theme inline` (not plain `@theme`) is required here: it emits
+   `var(--c-*)` into the utility instead of resolving the value at
+   build time, which is what lets one stylesheet serve both themes.
+   ============================================================ */
+@theme inline {
+  /* Surfaces. The number keeps the ROLE, not the lightness — 950 is
+     always "the deepest layer", even though in light mode that is a
+     slightly deeper cream rather than a darker one. */
+  --color-ink-950: var(--c-sunken);
+  --color-ink-900: var(--c-base);
+  --color-ink-850: var(--c-raised);
+  --color-ink-800: var(--c-hover);
+  --color-ink-750: var(--c-field);
+  --color-ink-700: var(--c-line);
+  --color-ink-600: var(--c-line-strong);
+
+  /* Text. Tailwind's neutral scale is overridden wholesale: the same
+     numbers have to mean "primary text" in light and "bright text" at
+     night, which the stock scale cannot do. */
+  --color-neutral-100: var(--c-fg-strong);
+  --color-neutral-200: var(--c-fg);
+  --color-neutral-300: var(--c-fg-soft);
+  --color-neutral-400: var(--c-fg-muted);
+  --color-neutral-500: var(--c-fg-faint);
+  --color-neutral-600: var(--c-fg-ghost);
+
+  --color-body: var(--c-fg);
+  --color-strong: var(--c-fg-strong);
+  --color-dim: var(--c-fg-muted);
+  --color-mute: var(--c-fg-faint);
+  --color-faint: var(--c-fg-ghost);
+
+  --color-accent: var(--c-accent);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-link: var(--c-link);
+  --color-danger: var(--c-danger);
+  --color-danger-soft: var(--c-danger-soft);
+
+  /* A deliberately inverted pair, for controls that must stay legible
+     in either theme (the send button, Save). At night it is a light
+     circle on black; in daylight a dark circle on cream. */
+  --color-invert: var(--c-invert-bg);
+  --color-invert-fg: var(--c-invert-fg);
+  --color-invert-hover: var(--c-invert-bg-hover);
+
+  --color-code: var(--c-code-bg);
+  --color-code-fg: var(--c-code-fg);
+}
+
+/* ── Night (the default) ──────────────────────────────────────
+   Warm charcoal rather than the blue-grey most dark UIs reach for.
+   Claude's dark surfaces are browns, and a blue-grey page next to
+   warm text reads as cheap. */
+:root,
+:root[data-theme="night"] {
+  color-scheme: dark;
+
+  --c-sunken: #131312;      /* sidebar, deepest layer */
+  --c-base: #1f1e1d;        /* page background */
+  --c-raised: #262625;      /* cards, inputs */
+  --c-hover: #30302e;       /* hovered rows */
+  --c-field: #2b2b29;       /* form fields */
+  --c-line: #3e3e3a;        /* borders */
+  --c-line-strong: #52514c;
+
+  --c-fg-strong: #f5f4ef;
+  --c-fg: #e8e7e0;
+  --c-fg-soft: #cdcbc2;
+  --c-fg-muted: #a8a69c;
+  --c-fg-faint: #85847c;
+  --c-fg-ghost: #6b6a63;
+
+  --c-accent: #d97757;
+  --c-accent-soft: rgb(217 119 87 / 0.18);
+  --c-link: #d98a6c;
+  --c-danger: #e5645e;
+  --c-danger-soft: rgb(229 100 94 / 0.14);
+
+  --c-invert-bg: #f5f4ef;
+  --c-invert-fg: #1f1e1d;
+  --c-invert-bg-hover: #e8e7e0;
+
+  --c-code-bg: #0d0d0c;
+  --c-code-fg: #e5e3da;
+}
+
+/* ── Light ─────────────────────────────────────────────────────
+   Claude's signature warm off-white, not pure #fff: a pure white
+   page next to white cards has no depth, and the eye reads the whole
+   surface as flat. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --c-sunken: #f0eee6;      /* the sidebar sits just under the page */
+  --c-base: #faf9f5;
+  --c-raised: #ffffff;
+  --c-hover: #f0eee6;
+  --c-field: #ffffff;
+  --c-line: #e5e3dc;
+  --c-line-strong: #cfccc1;
+
+  --c-fg-strong: #141413;
+  --c-fg: #2f2f2c;
+  --c-fg-soft: #52514c;
+  --c-fg-muted: #6b6a63;
+  --c-fg-faint: #8a8981;
+  --c-fg-ghost: #a3a299;
+
+  /* Darker than the night accent so it still clears 4.5:1 on cream. */
+  --c-accent: #c15f3c;
+  --c-accent-soft: rgb(193 95 60 / 0.12);
+  --c-link: #b5562f;
+  --c-danger: #c4362f;
+  --c-danger-soft: rgb(196 54 47 / 0.1);
+
+  --c-invert-bg: #1f1e1d;
+  --c-invert-fg: #faf9f5;
+  --c-invert-bg-hover: #2f2f2c;
+
+  --c-code-bg: #f2f0e9;
+  --c-code-fg: #2f2f2c;
+}
+
 @keyframes pulse-dot {
   0%, 100% { transform: scale(0.75); opacity: 0.6; }
   50% { transform: scale(1); opacity: 1; }
 }
 @keyframes plating {
-  0%, 100% { background-color: #262626; }
-  50% { background-color: #333; }
+  0%, 100% { background-color: var(--c-raised); }
+  50% { background-color: var(--c-hover); }
 }
 @keyframes fade-text {
   0%, 100% { opacity: 0.5; }
@@ -67,30 +178,28 @@
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
-
-  color-scheme: dark;
 }
 
 html, body { height: 100%; }
 
 body {
-  background: var(--color-ink-900);
-  color: var(--color-body);
+  background: var(--c-base);
+  color: var(--c-fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
 
 /* ── Scrollbars ─────────────────────────────────────────── */
-.thin-scroll { scrollbar-width: thin; scrollbar-color: var(--color-ink-700) transparent; }
+.thin-scroll { scrollbar-width: thin; scrollbar-color: var(--c-line) transparent; }
 .thin-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-.thin-scroll::-webkit-scrollbar-thumb { background: var(--color-ink-700); border-radius: 8px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: var(--c-line); border-radius: 8px; }
 .thin-scroll::-webkit-scrollbar-track { background: transparent; }
 
 /* ── Thinking dot while a reply streams ─────────────────── */
 .thinking-dot {
   display: inline-block; width: 12px; height: 12px; border-radius: 50%;
-  background: var(--color-body); vertical-align: middle;
+  background: var(--c-fg); vertical-align: middle;
   animation: var(--animate-pulse-dot);
 }
 .thinking-dot.inline { width: 9px; height: 9px; margin-left: 4px; }
@@ -98,37 +207,38 @@ body {
 /* ── Generated markdown ─────────────────────────────────── */
 /* Hand-written rather than @tailwindcss/typography so the exact
    look of the previous stylesheet is preserved. */
-.md { line-height: 1.75; color: var(--color-body); overflow-wrap: break-word; }
+.md { line-height: 1.75; color: var(--c-fg); overflow-wrap: break-word; }
 .md > * { margin-top: 0.9rem; }
 .md > *:first-child { margin-top: 0; }
 .md > *:last-child { margin-bottom: 0; }
-.md h1, .md h2, .md h3, .md h4 { font-weight: 600; line-height: 1.35; color: var(--color-strong); margin-top: 1.5rem; }
+.md h1, .md h2, .md h3, .md h4 { font-weight: 600; line-height: 1.35; color: var(--c-fg-strong); margin-top: 1.5rem; }
 .md h1 { font-size: 1.5rem; }
 .md h2 { font-size: 1.25rem; margin-top: 1.4rem; }
 .md h3 { font-size: 1.075rem; margin-top: 1.2rem; }
 .md h4 { font-size: 1rem; }
-.md strong { color: var(--color-strong); font-weight: 600; }
+.md strong { color: var(--c-fg-strong); font-weight: 600; }
 .md ul { list-style: disc; padding-left: 1.5rem; margin-top: 0.9rem; }
 .md ol { list-style: decimal; padding-left: 1.5rem; margin-top: 0.9rem; }
 .md li { padding-left: 0.25rem; }
 .md li + li { margin-top: 0.35rem; }
-.md li::marker { color: var(--color-mute); }
-.md a { color: var(--color-link); text-decoration: underline; text-underline-offset: 2px; }
-.md blockquote { border-left: 3px solid var(--color-ink-600); padding-left: 1rem; color: #b4b4b4; margin-top: 0.9rem; }
-.md hr { border: 0; border-top: 1px solid var(--color-ink-700); margin: 1.5rem 0; }
+.md li::marker { color: var(--c-fg-faint); }
+.md a { color: var(--c-link); text-decoration: underline; text-underline-offset: 2px; }
+.md blockquote { border-left: 3px solid var(--c-line-strong); padding-left: 1rem; color: var(--c-fg-muted); margin-top: 0.9rem; }
+.md hr { border: 0; border-top: 1px solid var(--c-line); margin: 1.5rem 0; }
 .md code {
   font-family: var(--font-mono); font-size: 0.875em;
-  background: var(--color-ink-800); border-radius: 6px; padding: 0.15em 0.4em;
+  background: var(--c-raised); border: 1px solid var(--c-line);
+  border-radius: 6px; padding: 0.15em 0.4em;
 }
 .md pre {
-  background: #0d0d0d; color: #e5e5e5; border-radius: 12px;
-  padding: 1rem 1.1rem; overflow-x: auto; margin-top: 0.9rem;
+  background: var(--c-code-bg); color: var(--c-code-fg); border: 1px solid var(--c-line);
+  border-radius: 12px; padding: 1rem 1.1rem; overflow-x: auto; margin-top: 0.9rem;
 }
-.md pre code { background: none; padding: 0; color: inherit; font-size: 13px; }
+.md pre code { background: none; padding: 0; border: 0; color: inherit; font-size: 13px; }
 .md table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 0.9rem; display: block; overflow-x: auto; }
-.md th, .md td { border-bottom: 1px solid var(--color-ink-700); padding: 0.5rem 0.6rem; text-align: left; }
-.md th { font-weight: 600; color: var(--color-strong); }
-.md img { max-width: 280px; max-height: 280px; border-radius: 16px; border: 1px solid var(--color-ink-700); }
+.md th, .md td { border-bottom: 1px solid var(--c-line); padding: 0.5rem 0.6rem; text-align: left; }
+.md th { font-weight: 600; color: var(--c-fg-strong); }
+.md img { max-width: 280px; max-height: 280px; border-radius: 16px; border: 1px solid var(--c-line); }
 
 /* Centring that degrades safely: `justify-content: center` clips the top of
    an overflowing scroll container, `safe center` aligns to the start instead. */

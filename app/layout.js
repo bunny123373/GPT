@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import Script from "next/script";
+import { BOOT_SCRIPT } from "../lib/theme";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,12 +29,24 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#212121",
+  // Both are declared with media queries so the browser chrome matches the
+  // theme actually in use rather than always claiming the dark one.
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#1f1e1d" },
+    { media: "(prefers-color-scheme: light)", color: "#faf9f5" },
+  ],
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={inter.variable}>
+    /* data-theme is set by the inline script below before first paint. The
+       attribute here is only the server-rendered fallback. */
+    <html lang="en" data-theme="night" className={inter.variable}>
+      <head>
+        {/* Must run before the body paints, or a light-mode user gets a dark
+            flash. Deliberately inline and blocking rather than a <Script>. */}
+        <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
+      </head>
       <body className="h-full antialiased">
         {/* Puter.js must be on the page before any client component uses it. */}
         <Script src="https://js.puter.com/v2/" strategy="beforeInteractive" />

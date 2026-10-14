@@ -151,7 +151,7 @@ export default function Composer({
               onClick={onStop}
               title="Stop generating"
               aria-label="Stop generating"
-              className="grid size-9 place-items-center rounded-full bg-white text-ink-900 hover:bg-neutral-200"
+              className="grid size-9 place-items-center rounded-full bg-invert text-invert-fg hover:bg-invert-hover"
             >
               <IconStop />
             </button>
@@ -161,7 +161,7 @@ export default function Composer({
               disabled={!ready}
               title="Send"
               aria-label="Send"
-              className="grid size-9 place-items-center rounded-full bg-white text-ink-900 hover:bg-neutral-200
+              className="grid size-9 place-items-center rounded-full bg-invert text-invert-fg hover:bg-invert-hover
                          disabled:cursor-default disabled:bg-ink-600 disabled:text-neutral-400"
             >
               <IconArrowUp />

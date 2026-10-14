@@ -95,12 +95,14 @@ function Tile({ item, url, nonce, onMint, onOpen, onRetry }) {
         </div>
       )}
 
-      {/* Tap affordance on touch, where there's no hover to reveal a label. */}
+      {/* Fixed light-on-dark: the scrim sits on top of the photo, not on the
+          page, so it must not follow the theme. Revealed on hover, and always
+          on touch, where there is no hover to reveal it. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2
                       bg-gradient-to-t from-black/80 to-transparent p-2 pt-6 text-left opacity-0
                       transition group-hover:opacity-100 max-sm:opacity-100">
-        <span className="min-w-0 flex-1 truncate text-[11px] text-neutral-200">{item.name}</span>
-        <span className="shrink-0 font-mono text-[10px] text-neutral-400">
+        <span className="min-w-0 flex-1 truncate text-[11px] text-white/90">{item.name}</span>
+        <span className="shrink-0 font-mono text-[10px] text-white/60">
           {item.kind === "video" ? item.ext.toUpperCase() : formatBytes(item.size)}
         </span>
       </div>
@@ -124,15 +126,19 @@ function Lightbox({ item, url, onClose, onPrev, onNext }) {
 
   if (!item) return null;
 
+  /* The lightbox is a dark scrim in BOTH themes — a photo is judged against
+     neutral grey, not against cream. So its text is fixed light-on-dark and
+     deliberately does NOT use theme tokens, which would flip to dark text on
+     a dark backdrop in light mode. */
   return (
     <div
-      className="fixed inset-0 z-70 flex flex-col bg-black/85 backdrop-blur-sm"
+      className="fixed inset-0 z-70 flex flex-col bg-black/90 backdrop-blur-sm"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="flex shrink-0 items-center gap-2 px-3 py-2.5">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm text-neutral-200">{item.name}</p>
-          <p className="font-mono text-[11px] text-neutral-500">
+          <p className="truncate text-sm text-white">{item.name}</p>
+          <p className="font-mono text-[11px] text-white/60">
             {item.kind === "video" ? "Video" : "Image"} · {item.ext.toUpperCase()} · {formatBytes(item.size)}
             {item.modified ? ` · ${new Date(item.modified).toLocaleDateString()}` : ""}
           </p>
@@ -142,14 +148,14 @@ function Lightbox({ item, url, onClose, onPrev, onNext }) {
           download={item.name}
           aria-disabled={!url}
           onClick={(e) => { if (!url) e.preventDefault(); }}
-          className={`rounded-lg p-2 hover:bg-white/10 ${url ? "text-neutral-200" : "pointer-events-none text-neutral-600"}`}
+          className={`rounded-lg p-2 hover:bg-white/10 ${url ? "text-white" : "pointer-events-none text-white/40"}`}
           title="Download"
         >
           <IconDownload className="size-5" />
         </a>
         <button
           onClick={onClose}
-          className="rounded-lg p-2 text-neutral-300 hover:bg-white/10"
+          className="rounded-lg p-2 text-white/90 hover:bg-white/10"
           title="Close" aria-label="Close"
         >
           <IconX className="size-5" />
@@ -159,7 +165,7 @@ function Lightbox({ item, url, onClose, onPrev, onNext }) {
       <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 pb-3 sm:px-14">
         <button
           onClick={onPrev}
-          className="absolute left-1 z-10 rounded-full bg-black/50 p-2 text-neutral-200 hover:bg-black/80 sm:left-2"
+          className="absolute left-1 z-10 rounded-full bg-black/50 p-2 text-white hover:bg-black/80 sm:left-2"
           title="Previous" aria-label="Previous"
         >
           <IconRedo className="size-5 rotate-180" />
@@ -174,12 +180,12 @@ function Lightbox({ item, url, onClose, onPrev, onNext }) {
             <img src={url} alt={item.name} className="max-h-full max-w-full rounded-lg object-contain" />
           )
         ) : (
-          <p className="text-sm text-neutral-400">Loading…</p>
+          <p className="text-sm text-white/60">Loading…</p>
         )}
 
         <button
           onClick={onNext}
-          className="absolute right-1 z-10 rounded-full bg-black/50 p-2 text-neutral-200 hover:bg-black/80 sm:right-2"
+          className="absolute right-1 z-10 rounded-full bg-black/50 p-2 text-white hover:bg-black/80 sm:right-2"
           title="Next" aria-label="Next"
         >
           <IconRedo className="size-5" />
