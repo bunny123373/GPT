@@ -1,0 +1,11 @@
+# Dev-only files: the deployed site is the static output, nothing else.
+.git
+.gitignore
+.vercel
+node_modules
+test
+server.js
+package.json
+package-lock.json
+README.md
+*.log
