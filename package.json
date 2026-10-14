@@ -7,12 +7,10 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "lint": "next lint",
     "test": "node test/run.js && node test/engine.js && node test/imagegen.js && node test/profile.js && node test/store.js",
     "test:unit": "npm run test",
     "test:image": "node test/imagegen.js",
     "test:profile": "node test/profile.js",
-    "test:dom": "node test/dom-check.js",
     "test:sdk": "node test/sdk-surface.js"
   },
   "dependencies": {
@@ -25,7 +23,7 @@
     "tailwindcss": "^4.3.3"
   },
   "engines": {
-    "node": ">=18.18"
+    "node": ">=20.9.0"
   },
   "keywords": ["puter", "puter.js", "ai", "chat", "image-generation", "nextjs", "llm"],
   "license": "MIT"
