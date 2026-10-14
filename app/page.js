@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Composer from "../components/Composer";
 import Message from "../components/Message";
+import Gallery from "../components/Gallery";
 import ModelMenu, { ModelTrigger } from "../components/ModelMenu";
 import AccountMenu, { buildAccountStats } from "../components/AccountMenu";
 import { SettingsDialog, ProfileDialog } from "../components/Dialogs";
@@ -76,6 +77,9 @@ export default function Page() {
   const [previews, setPreviews] = useState({});
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  /* Which sidebar destination is showing: 'new' | 'image' | 'gallery'.
+     'ask' is deliberately not one — it opens a dialog over the current view. */
+  const [view, setView] = useState("new");
   const [toasts, setToasts] = useState([]);
   const [stats, setStats] = useState("");
   const [draft, setDraft] = useState({});
@@ -208,6 +212,9 @@ export default function Page() {
     setConversations((prev) => [fresh, ...prev]);
     setCurrentId(fresh.id);
     setSearch("");
+    /* Leaving the gallery is part of starting a chat — otherwise the new
+       conversation would be created invisibly behind the grid. */
+    setView((v) => (v === "gallery" ? "new" : v));
     await save(fresh);
     setInput("");
     setAttachments([]);
@@ -221,6 +228,7 @@ export default function Page() {
     setInput("");
     setAttachments([]);
     setPreviews({});
+    setView((v) => (v === "gallery" ? "new" : v));
     if (window.matchMedia("(max-width: 767px)").matches) setSidebarOpen(false);
   }, [streaming, toast]);
 
@@ -683,8 +691,10 @@ export default function Page() {
         nav={{
           new: createConversation,
           image: async () => { await createConversation(); setMode("image"); },
+          gallery: () => setView("gallery"),
           ask: () => { setAccountOpen(false); setDraft({ ...profile }); setProfileOpen(true); },
         }}
+        view={view}
         search={search}
         onSearch={setSearch}
         conversations={conversations}
@@ -724,38 +734,57 @@ export default function Page() {
             <IconMenu className="size-5" />
           </button>
 
-          <div className="relative min-w-0">
-            <ModelTrigger
-              name={asText(catalogue.get(activeModel)?.name, "") || asText(activeModel, "Select a model")}
-              expanded={modelOpen}
-              onClick={() => { setModelOpen((o) => !o); setAccountOpen(false); }}
-            />
-            <ModelMenu
-              open={modelOpen}
-              onClose={() => setModelOpen(false)}
-              mode={mode}
-              query={modelQuery}
-              onQuery={setModelQuery}
-              groups={groups}
-              activeId={activeModel}
-              onPick={pickModel}
-              total={totalModels}
-            />
-          </div>
+          {/* The gallery browses finished media, so the model picker, usage
+              readout and chat export have nothing to act on here. */}
+          {view === "gallery" ? (
+            <>
+              <h1 className="text-base font-medium">Gallery</h1>
+              <div className="flex-1" />
+            </>
+          ) : (
+            <>
+              <div className="relative min-w-0">
+                <ModelTrigger
+                  name={asText(catalogue.get(activeModel)?.name, "") || asText(activeModel, "Select a model")}
+                  expanded={modelOpen}
+                  onClick={() => { setModelOpen((o) => !o); setAccountOpen(false); }}
+                />
+                <ModelMenu
+                  open={modelOpen}
+                  onClose={() => setModelOpen(false)}
+                  mode={mode}
+                  query={modelQuery}
+                  onQuery={setModelQuery}
+                  groups={groups}
+                  activeId={activeModel}
+                  onPick={pickModel}
+                  total={totalModels}
+                />
+              </div>
 
-          <div className="flex-1" />
-          <div className="font-mono text-[11.5px] text-neutral-500 max-sm:hidden">{stats}</div>
-          <button
-            onClick={(e) => exportChat(e.shiftKey ? "json" : "md")}
-            title="Export as Markdown (Shift+click for JSON)"
-            aria-label="Export"
-            className="grid size-9 place-items-center rounded-md text-neutral-400 hover:bg-ink-700 hover:text-neutral-100 min-[420px]:size-8"
-          >
-            <IconDownload className="size-4" />
-          </button>
+              <div className="flex-1" />
+              <div className="font-mono text-[11.5px] text-neutral-500 max-sm:hidden">{stats}</div>
+              <button
+                onClick={(e) => exportChat(e.shiftKey ? "json" : "md")}
+                title="Export as Markdown (Shift+click for JSON)"
+                aria-label="Export"
+                className="grid size-9 place-items-center rounded-md text-neutral-400 hover:bg-ink-700 hover:text-neutral-100 min-[420px]:size-8"
+              >
+                <IconDownload className="size-4" />
+              </button>
+            </>
+          )}
         </header>
 
-        {hasMessages ? (
+        {view === "gallery" ? (
+          /* ---- Gallery: replaces the thread entirely; the composer is not
+                 shown because there is nothing to prompt here. ---- */
+          <Gallery
+            signedIn={store.signedIn}
+            onSignIn={handleAuth}
+            onToast={toast}
+          />
+        ) : hasMessages ? (
           /* ---- Conversation: thread scrolls, composer docks to the bottom ---- */
           <>
             <div ref={scrollerRef} className="thin-scroll min-h-0 flex-1 overflow-y-auto">

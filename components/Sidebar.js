@@ -3,17 +3,18 @@
 import { dateGroup } from "../lib/conversations";
 import {
   IconPanelClose, IconPencil, IconImage, IconSparkle,
-  IconSearch, IconTrash,
+  IconSearch, IconTrash, IconGrid,
 } from "./icons";
 
 const NAV = [
   { id: "new", label: "New chat", Icon: IconPencil },
   { id: "image", label: "Create image", Icon: IconImage },
+  { id: "gallery", label: "Gallery", Icon: IconGrid },
   { id: "ask", label: "Ask me", Icon: IconSparkle },
 ];
 
 export default function Sidebar({
-  open, onCollapse, nav, search, onSearch, conversations, currentId,
+  open, onCollapse, nav, view, search, onSearch, conversations, currentId,
   onSelect, onDelete, account, profileOn,
 }) {
   const q = search.trim().toLowerCase();
@@ -65,9 +66,14 @@ export default function Sidebar({
           <button
             key={id}
             onClick={() => nav[id]()}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-ink-800"
+            /* `ask` opens a dialog over whatever view is showing, so it never
+               reads as the active view. The rest are destinations. */
+            aria-current={id !== "ask" && view === id ? "page" : undefined}
+            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm ${
+              view === id ? "bg-ink-800 text-neutral-100" : "hover:bg-ink-800"
+            }`}
           >
-            <Icon className="size-4" />
+            <Icon className={`size-4 ${view === id ? "text-accent" : ""}`} />
             {label}
             {id === "ask" && profileOn && (
               <span className="ml-auto rounded-full bg-accent-soft px-2 py-px text-[11px] text-emerald-300">

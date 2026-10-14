@@ -7,9 +7,10 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "test": "node test/run.js && node test/engine.js && node test/imagegen.js && node test/profile.js && node test/store.js",
+    "test": "node test/run.js && node test/engine.js && node test/imagegen.js && node test/profile.js && node test/store.js && node test/gallery.js && node test/assets.mjs",
     "test:unit": "npm run test",
     "test:image": "node test/imagegen.js",
+    "test:gallery": "node test/gallery.js",
     "test:profile": "node test/profile.js",
     "test:css": "next build && node test/tailwind-audit.mjs",
     "test:sdk": "node test/sdk-surface.js"
