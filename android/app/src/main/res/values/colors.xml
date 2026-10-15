@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      styles.xml references these three in AppTheme, but Capacitor's template
+      ships no colors.xml — so AAPT2 fails the release build with
+      "resource color/colorPrimary not found". Defined here to match the app's
+      own palette: terracotta accent on the warm charcoal night canvas.
+    -->
+    <color name="colorPrimary">#b3542f</color>
+    <color name="colorPrimaryDark">#1f1e1d</color>
+    <color name="colorAccent">#d97757</color>
+</resources>

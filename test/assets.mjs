@@ -80,6 +80,64 @@ const strayDirs = readdirSync(root).filter((n) => {
 });
 ok('no asset folder stranded at the project root', strayDirs.length === 0, strayDirs.join(', '));
 
+/* ── Android resources must actually resolve ───────────────
+   AAPT2 fails the whole release build on a dangling @color/@string/@drawable,
+   and finding that out costs a multi-minute Gradle run. styles.xml in
+   Capacitor's template references three colours that ship no colors.xml at
+   all, so this is a real failure, not a hypothetical one. */
+console.log('\nandroid resources');
+{
+  const resRoot = join(root, 'android', 'app', 'src', 'main', 'res');
+  if (!existsSync(resRoot)) {
+    ok('no Android project yet (run `npm run apk` to create one)', true);
+  } else {
+    const valuesFiles = readdirSync(join(resRoot, 'values'))
+      .filter((f) => f.endsWith('.xml'))
+      .map((f) => join(resRoot, 'values', f));
+
+    // Every named resource defined in values/.
+    const defined = new Set();
+    for (const f of valuesFiles) {
+      const src = readFileSync(f, 'utf8');
+      for (const m of src.matchAll(/<(color|string|style|dimen|integer)\s+name="([^"]+)"/g)) {
+        defined.add(m[2]);
+      }
+    }
+
+    // Files and drawables are referenced by name too.
+    const fileRefs = new Set();
+    for (const dir of readdirSync(resRoot)) {
+      if (!dir.startsWith('drawable') && !dir.startsWith('mipmap')) continue;
+      for (const f of readdirSync(join(resRoot, dir))) {
+        fileRefs.add(f.replace(/\.(png|xml|webp|jpg)$/i, ''));
+      }
+    }
+
+    const missing = [];
+    for (const f of valuesFiles) {
+      const src = readFileSync(f, 'utf8');
+      for (const m of src.matchAll(/@(color|string|dimen|drawable|mipmap)\/([\w.]+)/g)) {
+        const [, kind, name] = m;
+        const known = kind === 'color' || kind === 'string' || kind === 'dimen'
+          ? defined.has(name)
+          : fileRefs.has(name);
+        if (!known) missing.push(`${f.split(/[\\/]/).pop()}: @${kind}/${name}`);
+      }
+    }
+
+    ok('every @color/@string/@drawable reference resolves',
+      missing.length === 0, missing.join(', '));
+
+    // The launcher background is painted behind a white-on-transparent
+    // foreground, so a white value renders a blank icon.
+    const launcherBg = valuesFiles.map((f) => readFileSync(f, 'utf8')).join('\n');
+    const bgMatch = launcherBg.match(/<color\s+name="ic_launcher_background">([^<]+)</);
+    ok('the adaptive-icon background is not pure white',
+      bgMatch && !/^#fff(fff)?$/i.test(bgMatch[1].trim()),
+      bgMatch ? bgMatch[1] : 'not defined');
+  }
+}
+
 /* ── the Android signing key must never be committable ────
    Not an asset, but the same class of mistake: a file that is fine to have on
    disk and catastrophic to publish. A leaked release key lets anyone ship an

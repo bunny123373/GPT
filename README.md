@@ -226,7 +226,7 @@ npm run test:css   # rebuilds, then checks every class token compiles
 npm run test:sdk   # fetches the live Puter.js bundle and checks the API surface
 ```
 
-**684 assertions across ten suites.** The unit suites run against a fake `puter` global, so they
+**687 assertions across ten suites.** The unit suites run against a fake `puter` global, so they
 cover streaming, aborts, error chunks, reasoning, images, image option building, quality-tier
 whitelisting, usage capture, the 400 KB KV ceiling, Markdown XSS escaping and theme resolution
 without needing a browser or an account. The theme suite goes a step further and *executes* the
