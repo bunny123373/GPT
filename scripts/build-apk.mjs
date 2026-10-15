@@ -64,18 +64,32 @@ if (!existsSync(KEYSTORE)) {
    gradlew downloads the distribution with no resume and no retry, which fails
    from this network; scripts/fetch-gradle.ps1 gets it reliably. Falls back to
    the wrapper if the local copy is somehow missing. */
-const localGradle = join(
-  process.env.USERPROFILE || '',
-  '.gradle-dists', `gradle-${GRADLE_VERSION}`, 'bin',
-  isWin ? 'gradle.bat' : 'gradle',
-);
+const home = process.env.USERPROFILE || process.env.HOME || '';
+const localGradle = join(home, '.gradle-dists', `gradle-${GRADLE_VERSION}`, 'bin',
+  isWin ? 'gradle.bat' : 'gradle');
+
+/* Capacitor 8 compiles at Java 21, so a JDK 21 is mandatory — the JDK on PATH
+   here is 17 and the build would fail with "invalid source release: 21".
+   scripts/fetch-jdk21.ps1 puts one in the user's own tools dir, which is
+   passed to Gradle rather than put on PATH so the machine's default JDK is
+   left alone. */
+const localJdk = join(home, '.jdk-dists', 'jdk-21.0.2');
+const gradleArgs = ['assembleRelease', '--no-daemon'];
+
+if (existsSync(join(localJdk, 'bin', isWin ? 'java.exe' : 'java'))) {
+  console.log('[apk] using local JDK 21');
+  gradleArgs.push(`-Dorg.gradle.java.home=${localJdk}`);
+} else {
+  console.log('[apk] no local JDK 21 found — falling back to the JDK on PATH.');
+  console.log('[apk] Capacitor 8 needs 21; run scripts/fetch-jdk21.ps1 if this fails.');
+}
 
 if (existsSync(localGradle)) {
   console.log(`[apk] using local Gradle ${GRADLE_VERSION}`);
-  run(localGradle, ['assembleRelease', '--no-daemon'], { cwd: ANDROID });
+  run(localGradle, gradleArgs, { cwd: ANDROID });
 } else {
   console.log('[apk] local Gradle missing, falling back to the wrapper');
-  run(isWin ? '.\\gradlew.bat' : './gradlew', ['assembleRelease', '--no-daemon'], { cwd: ANDROID });
+  run(isWin ? '.\\gradlew.bat' : './gradlew', gradleArgs, { cwd: ANDROID });
 }
 
 heading('done');

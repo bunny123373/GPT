@@ -6,7 +6,7 @@
  *   node test/assets.mjs
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 
 const root = process.cwd();
@@ -127,6 +127,27 @@ console.log('\nandroid resources');
 
     ok('every @color/@string/@drawable reference resolves',
       missing.length === 0, missing.join(', '));
+
+    /* Capacitor 8 compiles at Java 21. The JDK on PATH is 17 on this machine,
+       which fails the build with "invalid source release: 21" — after a full
+       Gradle distribution download. Cheap to check, expensive to discover. */
+    const home = process.env.USERPROFILE || process.env.HOME || '';
+    const localJdk = join(home, '.jdk-dists', 'jdk-21.0.2');
+    const hasLocal21 = existsSync(join(localJdk, 'bin',
+      process.platform === 'win32' ? 'java.exe' : 'java'));
+
+    let onPath = 0;
+    {
+      // `java -version` writes to stderr, so stdout alone comes back empty.
+      const res = spawnSync('java', ['-version'], { encoding: 'utf8' });
+      const text = `${res.stdout || ''}${res.stderr || ''}`;
+      const m = text.match(/version "(\d+)/);
+      onPath = m ? Number(m[1]) : 0;
+    }
+
+    ok('a JDK 21 is available for the Android build',
+      hasLocal21 || onPath >= 21,
+      hasLocal21 ? '' : `JDK on PATH is ${onPath || 'unknown'}, Capacitor 8 needs 21 (npm run android:jdk)`);
 
     // The launcher background is painted behind a white-on-transparent
     // foreground, so a white value renders a blank icon.
