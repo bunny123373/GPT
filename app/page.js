@@ -682,8 +682,15 @@ export default function Page() {
   /* ── render ────────────────────────────────────────────── */
   if (!ready || !settings) {
     return (
-      <div className="grid h-dvh place-items-center bg-ink-900 text-neutral-500">
-        <p className="font-mono text-sm">Loading GPT…</p>
+      <div className="grid h-dvh place-items-center bg-ink-900">
+        {/* The mark rather than a line of text: it says which app is opening
+            while the store and model catalogue are still loading, it takes no
+            width so the splash cannot reflow, and it pulses so the wait reads
+            as progress instead of a stall. */}
+        <div role="status" aria-label="Loading GPT">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" className="size-11 animate-pulse" />
+        </div>
       </div>
     );
   }
