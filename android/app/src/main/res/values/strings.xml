@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GPT</string>
+    <string name="title_activity_main">GPT</string>
+    <string name="package_name">com.bunny123373.gpt</string>
+    <string name="custom_url_scheme">com.bunny123373.gpt</string>
+</resources>

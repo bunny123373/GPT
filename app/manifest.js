@@ -1,3 +1,8 @@
+/* The PWA manifest is a fixed document — it never depends on a request.
+   Declaring it static is required for `output: "export"` (used by the Android
+   APK build) and is a no-op for the normal server build. */
+export const dynamic = "force-static";
+
 export default function manifest() {
   return {
     name: "GPT — AI Chat & Images",

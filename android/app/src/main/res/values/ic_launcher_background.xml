@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The adaptive-icon foreground is the white sparkle on a transparent canvas
+      (see scripts/make-android-icons.mjs), so this colour is what it actually
+      sits on. Capacitor ships #FFFFFF here, which renders white-on-white and
+      produces a blank launcher icon.
+
+      Matches the fill in public/icon.svg. Recolour the logo and this together.
+    -->
+    <color name="ic_launcher_background">#10a37f</color>
+</resources>

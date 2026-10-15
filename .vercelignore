@@ -5,6 +5,15 @@
 .vercel
 node_modules
 .next
+.next-export
 test
 README.md
 *.log
+
+# Android / Capacitor. Never deployable and, worse, android/keystore holds the
+# release signing key — uploading that anywhere it is not needed is a problem
+# even for a private project.
+android
+release
+capacitor.config.json
+scripts

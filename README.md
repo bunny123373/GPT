@@ -226,7 +226,7 @@ npm run test:css   # rebuilds, then checks every class token compiles
 npm run test:sdk   # fetches the live Puter.js bundle and checks the API surface
 ```
 
-**681 assertions across ten suites.** The unit suites run against a fake `puter` global, so they
+**684 assertions across ten suites.** The unit suites run against a fake `puter` global, so they
 cover streaming, aborts, error chunks, reasoning, images, image option building, quality-tier
 whitelisting, usage capture, the 400 KB KV ceiling, Markdown XSS escaping and theme resolution
 without needing a browser or an account. The theme suite goes a step further and *executes* the
@@ -257,6 +257,7 @@ lib/conversations.js  conversation model, titles, size limits
 lib/gallery.js        gallery data layer: classify, sort, filter, scan the drive
 lib/memories.js       durable per-user facts: prompt rendering, merging, extraction parsing
 lib/theme.js          theme store + the boot script
+scripts/              static export, launcher icons, keystore, APK pipeline
 lib/markdown.js       dependency-free Markdown renderer
 ```
 
@@ -305,6 +306,56 @@ npx vercel --prod        # first run links/creates the project
 ```
 
 No environment variables and no secrets to leak: everything talks to Puter from the browser.
+
+## Android APK
+
+```bash
+npm run apk          # -> release/gpt.apk
+```
+
+Install it with `adb install -r release/gpt.apk`, or copy the file to the phone and tap it
+(Android will ask you to allow installs from that source).
+
+**How it works.** [Capacitor](https://capacitorjs.com) wraps the app in a native Android shell
+that serves the site from bundled assets. Capacitor ships *files*, not a server, so the APK build
+is a static export: `APK=1 next build` produces a plain `index.html` + assets bundle in
+`.next-export/` (`distDir` is what names it in Next 16). `npm run build` and the Vercel deploy are
+untouched — this only happens on the `build:apk` path.
+
+Each step fails loudly rather than shipping something subtly wrong. The export is verified before
+`cap sync` copies it, because a failed export would otherwise leave the previous build in place and
+the APK would quietly be stale.
+
+**The launcher icon and splash are generated**, not Capacitor's placeholders —
+`scripts/make-android-icons.mjs` rasterises `public/icon.svg` into every density bucket and
+rebuilds all 11 splash screens at whatever size they already were. The adaptive-icon background is
+set to the logo's fill, because the foreground is the white mark on transparent and would otherwise
+render white-on-white.
+
+**Signing.** `scripts/make-keystore.mjs` generates a release key on first run, and
+`app/build.gradle` signs `assembleRelease` with it so the APK is actually installable — a
+debug-signed build is not distributable. The key lives in `android/keystore/` and is **gitignored**,
+and `android/` is excluded from `.vercelignore`; `test/assets.mjs` asserts both, because a leaked
+release key lets anyone ship an "update" that Android then refuses to install. The password is
+checked into `build.gradle`, which is fine for a personal sideloaded build and would need to be a
+real secret for any public release.
+
+> **Gradle is fetched from a mirror.** `services.gradle.org` is unreachable from this network, so
+> `scripts/fetch-gradle.ps1` downloads the distribution with curl (retry + resume, falling back
+> between Tencent, Huawei and the official host) and `npm run apk` calls that copy directly. Swap
+> `distributionUrl` back to `services.gradle.org` anywhere it resolves.
+
+### Known limitation: Puter sign-in in the APK
+
+The Puter SDK opens **browser popups** (`window.open(..., "_blank")`) for sign-in and for the drive
+folder picker — there are 30 popup references in the bundle. Android's WebView has
+`setSupportMultipleWindows` off by default, which makes `window.open` return `null`, so those two
+flows will not work in the APK as built.
+
+Everything else is unaffected: the app is fully usable as a **guest**, with chats, settings,
+memories and the gallery stored in `localStorage` inside the app. Making sign-in work needs a
+`MainActivity` that enables multiple windows and handles `onCreateWindow` — real WebView work that
+needs testing on a physical device, so it is not included here rather than shipped unverified.
 
 ## Notes
 

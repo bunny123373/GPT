@@ -1,0 +1,19 @@
+{
+  "appId": "com.bunny123373.gpt",
+  "appName": "GPT",
+  "webDir": ".next-export",
+  "android": {
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 600,
+      "backgroundColor": "#1f1e1d",
+      "showSpinner": false
+    }
+  }
+}

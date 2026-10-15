@@ -1,7 +1,28 @@
 node_modules/
 .next/
+.next-export/
 out/
 .DS_Store
 *.log
 .vercel
 .env*.local
+
+# ── Android (Capacitor) ─────────────────────────────────────
+# The Android project is real source and is committed, so the app can be
+# rebuilt from a clone. Everything below is generated or secret.
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/capacitor-cordova-android-plugins/
+
+# The signing key. Committing this would let anyone publish an "update" that
+# Android would then refuse to install, and it must be regenerated with the
+# real release credentials for any public distribution.
+android/keystore/
+
+# Built APKs are large binaries; release/ is the hand-off location.
+release/

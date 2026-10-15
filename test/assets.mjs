@@ -6,6 +6,7 @@
  *   node test/assets.mjs
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
 const root = process.cwd();
@@ -63,13 +64,56 @@ for (const ref of new Set(iconRefs)) {
 const rootAssets = readdirSync(root).filter((n) => /\.(png|svg|ico|jpg|webp)$/i.test(n));
 ok('no image assets stranded at the project root', rootAssets.length === 0, rootAssets.join(', '));
 
+/* Known build/output directories. These legitimately contain images, so the
+   "stranded asset folder" check below has to skip them — otherwise adding a
+   new build target silently reads as a real problem. */
+const IGNORED_DIRS = [
+  'public', 'node_modules', '.git', '.next', 'app', 'components', 'lib', 'test',
+  '.next-export', 'release', 'android', 'scripts',
+];
+
 const strayDirs = readdirSync(root).filter((n) => {
   if (!existsSync(join(root, n)) || !statSync(join(root, n)).isDirectory()) return false;
-  if (['public', 'node_modules', '.git', '.next', 'app', 'components', 'lib', 'test'].includes(n)) return false;
+  if (IGNORED_DIRS.includes(n)) return false;
   const inside = readdirSync(join(root, n)).filter((f) => /\.(png|svg|jpg|jpeg|webp|ico)$/i.test(f));
   return inside.length > 0;
 });
 ok('no asset folder stranded at the project root', strayDirs.length === 0, strayDirs.join(', '));
+
+/* ── the Android signing key must never be committable ────
+   Not an asset, but the same class of mistake: a file that is fine to have on
+   disk and catastrophic to publish. A leaked release key lets anyone ship an
+   "update" that Android then refuses to install for real users. */
+console.log('\nandroid release key');
+{
+  const gitignore = readFileSync(join(root, '.gitignore'), 'utf8');
+  const ignoresKeystore = /^android\/keystore\/?$/m.test(gitignore);
+
+  ok('.gitignore covers android/keystore/', ignoresKeystore,
+    ignoresKeystore ? '' : 'the release signing key would be committable');
+
+  const vercelignorePath = join(root, '.vercelignore');
+  if (existsSync(vercelignorePath)) {
+    const vi = readFileSync(vercelignorePath, 'utf8');
+    ok('.vercelignore excludes the Android project', /^android\s*$/m.test(vi));
+  }
+
+  const keystorePath = join(root, 'android', 'keystore');
+  if (existsSync(keystorePath)) {
+    const keys = readdirSync(keystorePath).filter((f) => /\.(jks|keystore)$/i.test(f));
+    ok('no keystore is tracked by git',
+      !keys.some((f) => {
+        try {
+          execFileSync('git', ['ls-files', '--error-unmatch', `android/keystore/${f}`],
+            { cwd: root, stdio: 'ignore' });
+          return true;
+        } catch { return false; }
+      }),
+      'a key is committed — remove it and rotate the keystore');
+  } else {
+    ok('no keystore on disk yet (one will be generated on first APK build)', true);
+  }
+}
 
 console.log(`\n${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);
